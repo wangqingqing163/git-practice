@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookLoop · 二手图书交易平台</title>
+    <link rel="stylesheet" href="css/style.css?v=20260712">
+</head>
+<body>
+    <div id="app">
+        <nav-bar :user="currentUser" :is-admin="isAdmin" @open-login="showLoginModal = true" @logout="handleLogout"></nav-bar>
+        <router-view v-slot="{ Component }">
+            <transition name="page" mode="out-in">
+                <component :is="Component" />
+            </transition>
+        </router-view>
+        <login-modal v-if="showLoginModal" @close="showLoginModal = false" @login-success="onLoginSuccess"></login-modal>
+    </div>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.js"></script>
+    <script src="js/api.js?v=20260712"></script>
+    <script src="js/regionData.js?v=20260712"></script>
+    <script src="js/store.js?v=20260712"></script>
+    <script src="components/Toast.js?v=20260712"></script>
+    <script src="components/NavBar.js?v=20260712"></script>
+    <script src="components/LoginModal.js?v=20260712"></script>
+    <script src="components/BookCard.js?v=20260712"></script>
+    <script src="components/Carousel.js?v=20260712"></script>
+    <script src="views/Home.js?v=20260712"></script>
+    <script src="views/Personal.js?v=20260712"></script>
+    <script src="views/Orders.js?v=20260712"></script>
+    <script src="views/Admin.js?v=20260712"></script>
+    <script src="views/SellerProfile.js?v=20260712"></script>
+    <script src="js/router.js?v=20260712"></script>
+    <script src="js/app.js?v=20260712"></script>
+</body>
+</html>
