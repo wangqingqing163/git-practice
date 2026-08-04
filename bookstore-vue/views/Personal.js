@@ -67,11 +67,21 @@ const Personal = {
         <div class="section-card">
             <div class="section-header">
                 <h3>我发布的二手书</h3>
+                <span class="count-badge">{{ myBooks.length }} 本</span>
+                <div class="batch-actions" v-if="selectedBooks.length > 0">
+                    <span class="selected-count">已选 {{ selectedBooks.length }} 项</span>
+                    <button class="action-btn btn-danger" @click="batchDeleteBooks">批量删除</button>
+                    <button class="action-btn btn-default" @click="selectedBooks = []">取消选择</button>
+                </div>
             </div>
             <div class="table-responsive"><table v-if="myBooks.length">
-                <thead><tr><th>书名</th><th>作者</th><th>价格</th><th>成色</th><th>状态</th><th>操作</th></tr></thead>
+                <thead><tr>
+                    <th style="width:40px"><input type="checkbox" v-model="selectAllBooks" @change="toggleSelectAllBooks"></th>
+                    <th>书名</th><th>作者</th><th>价格</th><th>成色</th><th>状态</th><th>操作</th>
+                </tr></thead>
                 <tbody>
-                    <tr v-for="b in myBooks" :key="b.id">
+                    <tr v-for="b in myBooks" :key="b.id" :class="{ 'selected-row': selectedBooks.includes(b.id) }">
+                        <td><input type="checkbox" :value="b.id" v-model="selectedBooks"></td>
                         <td>{{ b.name }}</td><td>{{ b.author || '-' }}</td>
                         <td>¥{{ (b.price||0).toFixed(2) }}</td><td>{{ b.level }}</td>
                         <td><span class="status-badge" :class="b.status==='1'?'status-received':'status-pending'">{{ b.status==='1'?'在售':'已售' }}</span></td>
@@ -302,6 +312,9 @@ const Personal = {
             showPublish: false, showEdit: false, showBatchBuy: false, batchBuying: false, showFavoriteDetail: false, favoriteDetailBook: null,
             selectAll: false, selectedIds: [],
             selectedFavorites: [], selectAllFavorites: false,
+            // 发布的图书批量操作
+            selectedBooks: [],
+            selectAllBooks: false,
             batchForm: { receiverName: '', phone: '', province: '', city: '', district: '', detailAddress: '', remark: '' },
             // 省市区数据
             provinces: regionData.provinces,
@@ -461,9 +474,65 @@ const Personal = {
             if (!confirm('确定下架？')) return;
             try {
                 const data = await api.del('/secondbook/del/' + id);
-                if (data.success) { this.showToast('下架成功', 'success'); this.loadMyBooks(); }
-                else this.showToast(data.msg || '失败', 'error');
+                if (data.success) {
+                    this.showToast('下架成功', 'success');
+                    this.selectedBooks = this.selectedBooks.filter(bookId => bookId !== id);
+                    this.loadMyBooks();
+                } else this.showToast(data.msg || '失败', 'error');
             } catch (e) { this.showToast('网络错误', 'error'); }
+        },
+
+        // ==================== 发布的图书批量操作方法 ====================
+        toggleSelectAllBooks() {
+            if (this.selectAllBooks) {
+                this.selectedBooks = this.myBooks.map(b => b.id);
+            } else {
+                this.selectedBooks = [];
+            }
+        },
+
+        async batchDeleteBooks() {
+            if (this.selectedBooks.length === 0) {
+                this.showToast('请先选择要删除的图书', 'warning');
+                return;
+            }
+
+            if (!confirm(`确定要批量下架选中的 ${this.selectedBooks.length} 本图书吗？\n\n此操作不可恢复！`)) {
+                return;
+            }
+
+            let successCount = 0;
+            let failCount = 0;
+
+            for (const bookId of this.selectedBooks) {
+                try {
+                    const data = await api.del('/secondbook/del/' + bookId);
+                    if (data.success) {
+                        successCount++;
+                        console.log(`✅ 图书 ${bookId} 下架成功`);
+                    } else {
+                        failCount++;
+                        console.error(`❌ 图书 ${bookId} 下架失败:`, data.msg);
+                    }
+                } catch (e) {
+                    failCount++;
+                    console.error(`❌ 图书 ${bookId} 下架异常:`, e);
+                }
+            }
+
+            // 清空选择
+            this.selectedBooks = [];
+            this.selectAllBooks = false;
+
+            // 刷新列表
+            await this.loadMyBooks();
+
+            // 显示结果
+            if (failCount === 0) {
+                this.showToast(`✅ 成功下架 ${successCount} 本图书`, 'success');
+            } else {
+                this.showToast(`⚠️ 成功: ${successCount} 本, 失败: ${failCount} 本`, 'warning');
+            }
         },
         async updateCartNum(c) {
             try { await api.put('/cart/updateNum', { id: c.id, num: c.num }); } catch (e) {}
