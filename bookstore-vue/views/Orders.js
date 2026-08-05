@@ -30,7 +30,8 @@ const Orders = {
                             <span v-if="o.statusText==='已发货' && o.buyerConfirmed" class="confirmed-badge">已确认发货信息</span>
                         </td>
                         <td>
-                            <button class="action-btn btn-receive" v-if="o.statusText==='已发货' && !o.buyerConfirmed" @click="confirmShipInfo(o.id)">已确认发货信息</button>
+                            <button class="action-btn btn-logistics" v-if="o.statusText==='已发货'" @click="viewLogistics(o)" title="查看物流信息">📦 物流</button>
+                            <button class="action-btn btn-receive" v-if="o.statusText==='已发货' && !o.buyerConfirmed" @click="confirmShipInfo(o.id)">确认发货信息</button>
                             <button class="action-btn btn-receive" v-if="o.statusText==='已发货'" @click="receiveOrder(o.id)">确认收货</button>
                             <button class="action-btn btn-warning" v-if="o.statusText==='已收货' && !o.commented" @click="showComment(o)">评价</button>
                             <button class="action-btn btn-urge" v-if="o.statusText==='待发货' && !o.urged" @click="urgeOrder(o.id)">催发货</button>
@@ -223,6 +224,23 @@ const Orders = {
             if (status === '已收货') return 'status-received';
             return 'status-pending';
         },
+        // ==================== 买家查看物流信息 ====================
+        async viewLogistics(order) {
+            try {
+                const orderDetail = await api.get('/orders/' + order.id);
+                this.logisticsOrder = {
+                    id: order.id,
+                    trackingNo: orderDetail.trackingNo || order.trackingNo || '暂无快递单号',
+                    expressCompany: orderDetail.expressCompany || '',
+                    buyerConfirmed: order.buyerConfirmed
+                };
+                console.log('物流信息:', this.logisticsOrder);
+            } catch (e) {
+                console.error('获取物流信息失败:', e);
+                this.showToast('获取物流信息失败', 'error');
+            }
+        },
+
         openShipModal(id) {
             this.shipping = id;
             this.shipTrackingNo = '';

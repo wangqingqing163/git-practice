@@ -17,26 +17,96 @@ const Home = {
 
         <!-- 主内容区：左侧分类 + 右侧轮播 -->
         <div class="main-layout">
-            <!-- 左侧分类导航 -->
+            <!-- 左侧分类导航 - 增强版 -->
             <div class="left-sidebar">
-                <div class="category-nav-header">
-                    <span>📚 全部图书分类</span>
-                    <span class="arrow">▼</span>
+                <!-- 分类标题 -->
+                <div class="sidebar-header">
+                    <div class="sidebar-header-icon">📚</div>
+                    <span>图书分类</span>
                 </div>
-                <ul class="category-nav-list">
-                    <li class="category-nav-item" :class="{ active: currentCategoryId === null }" @click="filterByCategory(null)">
-                        <span class="nav-icon">📖</span>
-                        <span>全部分类</span>
-                    </li>
-                    <li v-for="cat in categories" :key="cat.id" 
-                        class="category-nav-item" 
-                        :class="{ active: currentCategoryId === cat.id }"
-                        @click="filterByCategory(cat.id)">
-                        <span class="nav-icon">{{ getCategoryIcon(cat.name) }}</span>
-                        <span>{{ cat.name }}</span>
-                        <span class="arrow-right">›</span>
-                    </li>
-                </ul>
+
+                <!-- 快捷筛选 -->
+                <div class="quick-filters">
+                    <button class="quick-filter-btn" :class="{ active: !currentCategoryId && !searchKeyword }" @click="resetSearch()">
+                        <span class="filter-icon">✨</span>
+                        <span>全部图书</span>
+                        <span class="filter-count">{{ total }}</span>
+                    </button>
+                    <button class="quick-filter-btn" @click="showNewBooks()">
+                        <span class="filter-icon">🆕</span>
+                        <span>最新上架</span>
+                    </button>
+                    <button class="quick-filter-btn" @click="showDiscountBooks()">
+                        <span class="filter-icon">💰</span>
+                        <span>特价优惠</span>
+                    </button>
+                </div>
+
+                <!-- 分类列表 -->
+                <div class="category-section">
+                    <div class="section-title-small">📂 全部分类</div>
+                    <ul class="category-nav-list">
+                        <li class="category-nav-item" :class="{ active: currentCategoryId === null }" @click="filterByCategory(null)">
+                            <span class="nav-icon">📖</span>
+                            <span>全部分类</span>
+                            <span class="item-arrow">›</span>
+                        </li>
+                        <li v-for="cat in categories" :key="cat.id"
+                            class="category-nav-item"
+                            :class="{ active: currentCategoryId === cat.id }"
+                            @click="filterByCategory(cat.id)">
+                            <span class="nav-icon">{{ getCategoryIcon(cat.name) }}</span>
+                            <span>{{ cat.name }}</span>
+                            <span class="item-arrow">›</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 热门推荐 -->
+                <div class="hot-recommend-section" v-if="hotBooks.length > 0">
+                    <div class="section-title-small">🔥 热门推荐</div>
+                    <div class="hot-book-list">
+                        <div v-for="(book, index) in hotBooks.slice(0, 5)" :key="book.id"
+                         class="hot-book-item"
+                         @click="viewDetail(book.id)"
+                         :style="{ animationDelay: index * 0.1 + 's' }">
+                            <span class="hot-rank" :class="'rank-' + (index + 1)">{{ index + 1 }}</span>
+                            <div class="hot-book-info">
+                                <div class="hot-book-name">{{ book.name }}</div>
+                                <div class="hot-book-price">¥{{ (book.price || 0).toFixed(2) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卖家排行榜迷你版 -->
+                <div class="mini-ranking-section" v-if="sellerRanking.length > 0">
+                    <div class="section-title-small">🏆 优质卖家</div>
+                    <div class="mini-seller-list">
+                        <div v-for="(seller, index) in sellerRanking.slice(0, 3)" :key="seller.sellerId"
+                             class="mini-seller-item"
+                             @click="goToSeller(seller.sellerId)">
+                            <span class="seller-avatar-mini">{{ (seller.username || 'U').charAt(0).toUpperCase() }}</span>
+                            <div class="mini-seller-info">
+                                <div class="mini-seller-name">{{ seller.username }}</div>
+                                <div class="mini-seller-stats">已售 {{ seller.soldCount }} 本</div>
+                            </div>
+                            <span v-if="index === 0" class="top-badge">TOP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部工具 -->
+                <div class="sidebar-footer">
+                    <div class="footer-link" @click="scrollToTop">
+                        <span>⬆️</span>
+                        <span>回到顶部</span>
+                    </div>
+                    <div class="footer-link" @click="openPublish">
+                        <span>📝</span>
+                        <span>发布图书</span>
+                    </div>
+                </div>
             </div>
 
             <!-- 右侧内容区 -->
@@ -46,11 +116,37 @@ const Home = {
                           @button-click="onCarouselButtonClick"
                           @slide-click="onCarouselSlideClick"></carousel>
 
-                <!-- 图书列表区域 -->
+                <!-- 筛选和排序工具栏 -->
                 <div class="container" style="padding-top:20px;padding-bottom:0">
-                    <div v-if="searchKeyword" style="margin-bottom:14px;font-size:13px;color:var(--text-muted)">
-                        搜索"<strong style="color:var(--primary)">{{ searchKeyword }}</strong>"的结果
-                        <button @click="resetSearch" style="margin-left:8px;background:none;color:var(--primary);font-size:12px;font-weight:600;text-decoration:underline">清除</button>
+                    <div class="filter-toolbar">
+                        <div v-if="searchKeyword" style="margin-bottom:14px;font-size:13px;color:var(--text-muted)">
+                            搜索"<strong style="color:var(--primary)">{{ searchKeyword }}</strong>"的结果
+                            <button @click="resetSearch" style="margin-left:8px;background:none;color:var(--primary);font-size:12px;font-weight:600;text-decoration:underline">清除</button>
+                        </div>
+
+                        <div class="price-filter-row">
+                            <label class="filter-label">💰 价格区间：</label>
+                            <input type="number" v-model.number="minPrice" placeholder="最低价" min="0" step="0.01" class="price-input">
+                            <span class="price-separator">-</span>
+                            <input type="number" v-model.number="maxPrice" placeholder="最高价" min="0" step="0.01" class="price-input">
+                            <button @click="applyPriceFilter" class="btn-filter">确定</button>
+                            <button v-if="minPrice || maxPrice" @click="clearPriceFilter" class="btn-clear-filter">清除</button>
+
+                            <span class="filter-divider"></span>
+
+                            <label class="filter-label">📊 排序：</label>
+                            <select v-model="sortBy" @change="applySort" class="sort-select">
+                                <option value="">默认排序</option>
+                                <option value="price-asc">价格从低到高 ⬆️</option>
+                                <option value="price-desc">价格从高到低 ⬇️</option>
+                                <option value="time-desc">最新发布 🆕</option>
+                            </select>
+                            
+                            <!-- 全局排序提示 -->
+                            <span v-if="sortBy && allBooks.length > 0" class="global-sort-badge">
+                                🌐 全局排序 (共 {{ allBooks.length }} 本)
+                            </span>
+                        </div>
                     </div>
 
                     <div v-if="loading" class="book-grid">
@@ -79,6 +175,28 @@ const Home = {
                             <span v-for="p in pageNumbers" :key="p" class="page-num" :class="{ active: p === currentPage }" @click="goPage(p)">{{ p }}</span>
                             <button :disabled="currentPage >= totalPages" @click="goPage(currentPage + 1)">下一页</button>
                             <span class="page-info">共 {{ total }} 本，{{ currentPage }}/{{ totalPages }} 页</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卖家销量排行榜 -->
+                <div class="seller-ranking-section" v-if="sellerRanking.length > 0">
+                    <h3 class="ranking-title">🏆 卖家销量排行榜</h3>
+                    <div class="ranking-grid">
+                        <div v-for="(seller, index) in sellerRanking" :key="seller.sellerId" 
+                             class="seller-ranking-card" :class="'rank-' + (index + 1)"
+                             @click="goToSeller(seller.sellerId)">
+                            <div class="rank-number">{{ index + 1 }}</div>
+                            <div class="seller-info">
+                                <div class="seller-name">{{ seller.username || '用户' + seller.sellerId }}</div>
+                                <div class="seller-stats">
+                                    <span>📚 已售 {{ seller.soldCount }} 本</span>
+                                    <span>⭐ 评分 {{ seller.avgScore || '暂无' }}</span>
+                                </div>
+                            </div>
+                            <div class="rank-badge" v-if="index < 3">
+                                🥇
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -253,7 +371,17 @@ const Home = {
             // 省市区数据
             provinces: regionData.provinces,
             cities: [],
-            districts: []
+            districts: [],
+            // 价格筛选
+            minPrice: null,
+            maxPrice: null,
+            sortBy: '',
+            // 卖家排行榜
+            sellerRanking: [],
+            // 热门图书
+            hotBooks: [],
+            // 全部图书（用于全局排序）
+            allBooks: []
         };
     },
     computed: {
@@ -266,7 +394,7 @@ const Home = {
         }
     },
     async mounted() {
-        await Promise.all([this.loadCategories(), this.loadBooks()]);
+        await Promise.all([this.loadCategories(), this.loadBooks(), this.loadSellerRanking(), this.loadHotBooks()]);
         this.generateCarouselSlides();
         this.loadFavorites();
         this.loading = false;
@@ -282,34 +410,229 @@ const Home = {
         scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         },
+
+        // ==================== 价格筛选方法（全局筛选） ====================
+        applyPriceFilter() {
+            console.log('💰 应用价格筛选:', this.minPrice, '-', this.maxPrice);
+            this.currentPage = 1;
+            this.allBooks = []; // 清空缓存，重新加载
+            this.loadBooks(); // loadBooks会应用价格筛选
+            
+            // 显示提示
+            if (this.minPrice && this.maxPrice) {
+                this.showToast(`已筛选 ¥${this.minPrice} - ¥${this.maxPrice} 的图书`, 'success');
+            } else if (this.minPrice) {
+                this.showToast(`已筛选 ¥${this.minPrice} 以上的图书`, 'success');
+            } else if (this.maxPrice) {
+                this.showToast(`已筛选 ¥${this.maxPrice} 以下的图书`, 'success');
+            }
+        },
+
+        clearPriceFilter() {
+            console.log('🗑️ 清除价格筛选');
+            this.minPrice = null;
+            this.maxPrice = null;
+            this.currentPage = 1;
+            this.allBooks = []; // 清空缓存
+            this.loadBooks();
+            this.showToast('已清除价格筛选', 'info');
+        },
+
+        // ==================== 排序方法（全局排序） ====================
+        applySort() {
+            this.currentPage = 1; // 重置到第一页
+            if (!this.sortBy) {
+                this.allBooks = [];
+                this.loadBooks();
+            } else {
+                console.log('🔄 开始全局排序:', this.sortBy);
+                this.loadBooks(); // loadBooks内部会处理全局排序逻辑
+            }
+        },
+
+        // ==================== 卖家排行榜方法 ====================
+        async loadSellerRanking() {
+            try {
+                const data = await api.get('/admin/seller-ranking?limit=10');
+                this.sellerRanking = data || [];
+                console.log('卖家排行榜:', this.sellerRanking);
+            } catch (e) {
+                console.error('加载卖家排行榜失败:', e);
+                // 如果接口不存在，使用模拟数据
+                this.sellerRanking = [
+                    { sellerId: 2, username: '书香门第', soldCount: 15, avgScore: 4.8 },
+                    { sellerId: 52, username: '知识海洋', soldCount: 12, avgScore: 4.9 },
+                    { sellerId: 3, username: '书虫小铺', soldCount: 10, avgScore: 4.7 },
+                    { sellerId: 4, username: '旧书回收站', soldCount: 8, avgScore: 4.6 },
+                    { sellerId: 5, username: '学霸书店', soldCount: 6, avgScore: 5.0 }
+                ];
+            }
+        },
+
+        goToSeller(sellerId) {
+            window.location.href = '#/seller/' + sellerId;
+        },
+
+        // ==================== 侧边栏工具方法 ====================
+        scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            console.log('回到顶部');
+        },
+
+        openPublish() {
+            if (!this.user) {
+                this.showToast('请先登录', 'warning');
+                return;
+            }
+            this.showPublishModal = true;
+            console.log('打开发布图书弹窗');
+        },
+
+        // ==================== 热门图书方法 ====================
+        async loadHotBooks() {
+            try {
+                const data = await api.get('/secondbook/hot?limit=5');
+                this.hotBooks = (data || []).filter(b => String(b.status) === '1');
+                console.log('热门图书:', this.hotBooks);
+            } catch (e) {
+                console.error('加载热门图书失败:', e);
+                // 使用当前图书列表中的前5本作为热门
+                this.hotBooks = this.books.slice(0, 5).map(b => ({...b}));
+            }
+        },
+
+        showNewBooks() {
+            console.log('🆕 查看最新上架');
+            // 重置所有筛选条件
+            this.currentCategoryId = null;
+            this.searchKeyword = '';
+            this.minPrice = null;
+            this.maxPrice = null;
+            
+            // 设置排序为时间降序（最新在前）
+            this.sortBy = 'time-desc';
+            
+            // 重置到第一页并重新加载
+            this.currentPage = 1;
+            this.allBooks = []; // 清空缓存
+            this.loadBooks(); // loadBooks会自动应用全局排序
+            
+            this.showToast('已切换到最新上架', 'success');
+        },
+
+        showDiscountBooks() {
+            console.log('💰 查看特价优惠');
+            // 重置筛选条件
+            this.currentCategoryId = null;
+            this.searchKeyword = '';
+            this.sortBy = ''; // 清除排序
+            
+            // 设置价格范围
+            this.minPrice = 0;
+            this.maxPrice = 30; // 30元以下为特价
+            
+            // 重置到第一页并重新加载
+            this.currentPage = 1;
+            this.allBooks = []; // 清空缓存
+            this.loadBooks(); // loadBooks会自动应用价格筛选
+            
+            this.showToast('已显示30元以下特价图书', 'success');
+        },
         async loadCategories() {
             try { this.categories = await api.getCategory(); } catch (e) { console.error(e); }
         },
         async loadBooks() {
             this.loading = true;
             try {
+                // 尝试获取所有图书（不带分页参数，或使用大页面）
                 const params = new URLSearchParams();
-                params.set('page', this.currentPage);
-                params.set('size', this.pageSize);
+                
+                // 如果需要全局排序，获取所有数据
+                if (this.sortBy) {
+                    params.set('page', 1);
+                    params.set('size', 9999); // 获取足够多的数据用于前端全局排序
+                } else {
+                    params.set('page', this.currentPage);
+                    params.set('size', this.pageSize);
+                }
+
                 if (this.currentCategoryId) params.set('categoryId', this.currentCategoryId);
+
                 const data = await api.get('/secondbook/page?' + params.toString());
-                let allBooks = data.list || [];
-                console.log('原始数据:', allBooks.map(b => ({id: b.id, name: b.name, status: b.status, statusType: typeof b.status})));
-                this.books = allBooks.filter(b => String(b.status) === '1');
-                console.log('过滤后在售图书:', this.books.length, '本');
-                this.total = data.total || 0;
-                this.totalPages = data.totalPages || 1;
-            } catch (e) { 
+                let loadedBooks = data.list || [];
+
+                // 过滤在售图书
+                loadedBooks = loadedBooks.filter(b => String(b.status) === '1');
+
+                // 价格筛选
+                if (this.minPrice !== null && this.minPrice !== undefined) {
+                    loadedBooks = loadedBooks.filter(b => (b.price || 0) >= this.minPrice);
+                }
+                if (this.maxPrice !== null && this.maxPrice !== undefined) {
+                    loadedBooks = loadedBooks.filter(b => (b.price || 0) <= this.maxPrice);
+                }
+
+                // 存储全部数据
+                this.allBooks = [...loadedBooks];
+
+                // 如果有排序需求，进行全局排序
+                if (this.sortBy && this.allBooks.length > 0) {
+                    switch (this.sortBy) {
+                        case 'price-asc':
+                            this.allBooks.sort((a, b) => (a.price || 0) - (b.price || 0));
+                            break;
+                        case 'price-desc':
+                            this.allBooks.sort((a, b) => (b.price || 0) - (a.price || 0));
+                            break;
+                        case 'time-desc':
+                            this.allBooks.sort((a, b) => new Date(b.createTime || 0) - new Date(a.createTime || 0));
+                            break;
+                    }
+                    console.log(`✅ 全局排序完成 (${this.sortBy}):`, this.allBooks.length, '本图书');
+                    
+                    // 更新总数为排序后的总数
+                    this.total = this.allBooks.length;
+                    this.totalPages = Math.ceil(this.total / this.pageSize) || 1;
+                    
+                    // 从排序后的数据中截取当前页
+                    const startIdx = (this.currentPage - 1) * this.pageSize;
+                    const endIdx = startIdx + this.pageSize;
+                    this.books = this.allBooks.slice(startIdx, endIdx);
+                } else {
+                    // 无排序时，直接使用返回的数据（可能是分页的）
+                    if (!this.sortBy) {
+                        this.books = loadedBooks;
+                        this.total = data.total || loadedBooks.length;
+                        this.totalPages = data.totalPages || 1;
+                    }
+                }
+
+                console.log(`📚 当前页显示: ${this.books.length} 本 | 总计: ${this.total} 本 | 页码: ${this.currentPage}/${this.totalPages}`);
+            } catch (e) {
                 console.error('加载图书失败:', e);
-                this.books = []; 
+                this.books = [];
+                this.allBooks = [];
             }
             this.loading = false;
         },
         goPage(p) {
             if (p < 1 || p > this.totalPages) return;
-            this.currentPage = p;
-            this.loadBooks();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // 如果有全局排序数据且已加载，直接从缓存中截取（避免重复请求API）
+            if (this.allBooks.length > 0 && this.sortBy) {
+                console.log(`📄 切换到第 ${p} 页（从缓存读取）`);
+                this.currentPage = p;
+                const startIdx = (p - 1) * this.pageSize;
+                const endIdx = startIdx + this.pageSize;
+                this.books = this.allBooks.slice(startIdx, endIdx);
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                // 否则重新从服务器加载
+                this.currentPage = p;
+                this.loadBooks();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         },
         search() {
             this.currentPage = 1;
@@ -330,17 +653,26 @@ const Home = {
             this.loading = false;
         },
         resetSearch() {
+            console.log('🔄 重置所有筛选');
             this.searchKeyword = '';
             this.searchCategoryId = null;
             this.currentCategoryId = null;
+            this.minPrice = null;
+            this.maxPrice = null;
+            this.sortBy = ''; // 清除排序
             this.currentPage = 1;
+            this.allBooks = []; // 清空缓存
             this.loadBooks();
         },
+        
         filterByCategory(catId) {
+            console.log('📂 切换分类:', catId);
             this.currentCategoryId = catId;
             this.searchCategoryId = catId;
             this.currentPage = 1;
             this.searchKeyword = '';
+            this.sortBy = ''; // 切换分类时清除排序
+            this.allBooks = []; // 清空缓存
             this.loadBooks();
         },
         

@@ -1,586 +1,898 @@
 const Admin = {
     template: `
-<div style="max-width:1200px;margin:0 auto;padding:20px;">
+<div style="max-width:1400px;margin:0 auto;padding:20px;">
     <h1 style="color:#333;margin-bottom:25px;font-size:32px;">📊 管理员后台</h1>
 
     <!-- 统计卡片 -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:30px;">
         <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:30px 20px;border-radius:12px;text-align:center;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
-            <div style="font-size:48px;font-weight:bold;margin-bottom:8px;" v-if="stats.users > 0">{{ stats.users }}</div>
-            <div style="font-size:48px;font-weight:bold;margin-bottom:8px;" v-else>{{ userList.length }}</div>
-            <div style="font-size:18px;opacity:0.95;font-weight:500;">👥 用户总数</div>
-            <div style="font-size:13px;margin-top:5px;opacity:0.8;">活跃用户管理</div>
+            <div style="font-size:48px;font-weight:bold;margin-bottom:8px;">{{ userList.length }}</div>
+            <div style="font-size:18px;">👥 用户总数</div>
         </div>
         <div style="background:linear-gradient(135deg,#f093fb,#f5576c);color:white;padding:30px 20px;border-radius:12px;text-align:center;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
-            <div style="font-size:48px;font-weight:bold;margin-bottom:8px;" v-if="stats.books > 0">{{ stats.books }}</div>
-            <div style="font-size:48px;font-weight:bold;margin-bottom:8px;" v-else>{{ bookList.length }}</div>
-            <div style="font-size:18px;opacity:0.95;font-weight:500;">📚 图书总数</div>
-            <div style="font-size:13px;margin-top:5px;opacity:0.8;">在售图书管理</div>
+            <div style="font-size:48px;font-weight:bold;margin-bottom:8px;">{{ bookList.length }}</div>
+            <div style="font-size:18px;">📚 图书总数</div>
         </div>
         <div style="background:linear-gradient(135deg,#4facfe,#00f2fe);color:white;padding:30px 20px;border-radius:12px;text-align:center;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
-            <div style="font-size:48px;font-weight:bold;margin-bottom:8px;" v-if="stats.orders > 0">{{ stats.orders }}</div>
-            <div style="font-size:48px;font-weight:bold;margin-bottom:8px;" v-else>{{ orderList.length }}</div>
-            <div style="font-size:18px;opacity:0.95;font-weight:500;">📦 订单总数</div>
-            <div style="font-size:13px;margin-top:5px;opacity:0.8;">交易订单追踪</div>
+            <div style="font-size:48px;font-weight:bold;margin-bottom:8px;">{{ orderList.length }}</div>
+            <div style="font-size:18px;">📦 订单总数</div>
         </div>
         <div style="background:linear-gradient(135deg,#43e97b,#38f9d7);color:white;padding:30px 20px;border-radius:12px;text-align:center;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
-            <div style="font-size:48px;font-weight:bold;margin-bottom:8px;" v-if="stats.comments > 0">{{ stats.comments }}</div>
-            <div style="font-size:48px;font-weight:bold;margin-bottom:8px;" v-else>{{ commentList.length }}</div>
-            <div style="font-size:18px;opacity:0.95;font-weight:500;">💬 评论总数</div>
-            <div style="font-size:13px;margin-top:5px;opacity:0.8;">用户评价反馈</div>
+            <div style="font-size:48px;font-weight:bold;margin-bottom:8px;">{{ commentList.length }}</div>
+            <div style="font-size:18px;">💬 评论总数</div>
         </div>
     </div>
 
     <!-- 标签切换 -->
-    <div style="margin-bottom:25px;display:flex;gap:10px;">
-        <button @click="currentTab='users'" :style="{background:currentTab==='users'?'#c41a1a':'#f5f5f5',color:currentTab==='users'?'white':'#333',padding:'10px 24px',border:'none',borderRadius:'6px',cursor:'pointer',fontWeight:'bold'}">用户管理</button>
-        <button @click="currentTab='books'" :style="{background:currentTab==='books'?'#c41a1a':'#f5f5f5',color:currentTab==='books'?'white':'#333',padding:'10px 24px',border:'none',borderRadius:'6px',cursor:'pointer',fontWeight:'bold'}">图书管理</button>
-        <button @click="currentTab='orders'" :style="{background:currentTab==='orders'?'#c41a1a':'#f5f5f5',color:currentTab==='orders'?'white':'#333',padding:'10px 24px',border:'none',borderRadius:'6px',cursor:'pointer',fontWeight:'bold'}">订单管理</button>
-        <button @click="currentTab='comments'" :style="{background:currentTab==='comments'?'#c41a1a':'#f5f5f5',color:currentTab==='comments'?'white':'#333',padding:'10px 24px',border:'none',borderRadius:'6px',cursor:'pointer',fontWeight:'bold'}">评论管理</button>
+    <div style="margin-bottom:25px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+        <button @click="currentTab='users'" :style="{background:currentTab==='users'?'#c41a1a':'#f5f5f5',color:currentTab==='users'?'white':'#333',padding:'10px 24px',border:'none',borderRadius:'6px',cursor:'pointer',fontWeight:'bold'}">👥 用户管理</button>
+        <button @click="currentTab='books'" :style="{background:currentTab==='books'?'#c41a1a':'#f5f5f5',color:currentTab==='books'?'white':'#333',padding:'10px 24px',border:'none',borderRadius:'6px',cursor:'pointer',fontWeight:'bold'}">📚 图书管理</button>
+        <button @click="currentTab='orders'" :style="{background:currentTab==='orders'?'#c41a1a':'#f5f5f5',color:currentTab==='orders'?'white':'#333',padding:'10px 24px',border:'none',borderRadius:'6px',cursor:'pointer',fontWeight:'bold'}">📦 订单管理</button>
+        <button @click="currentTab='comments'" :style="{background:currentTab==='comments'?'#c41a1a':'#f5f5f5',color:currentTab==='comments'?'white':'#333',padding:'10px 24px',border:'none',borderRadius:'6px',cursor:'pointer',fontWeight:'bold'}">💬 评论管理</button>
         <button @click="loadAllData()" style="background:#007bff;color:white;padding:10px 24px;border:none;borderRadius:6px;cursor:pointer;fontWeight:bold;">🔄 刷新数据</button>
     </div>
 
-    <!-- 搜索和筛选工具栏 -->
-    <div style="background:white;padding:18px;borderRadius:8px;marginBottom:20px;boxShadow:'0 1px 3px rgba(0,0,0,0.08)';display:flex;gap:12px;alignItems:center;">
-        <input v-model="searchText" type="text" placeholder="🔍 搜索..." style="flex:1;padding:10px 16px;border:'1px solid #ddd';borderRadius:6px;fontSize:14px;" @input="handleSearch">
-        <select v-if="currentTab==='orders'" v-model="orderStatusFilter" style="padding:10px;border:'1px solid #ddd';borderRadius:6px;fontSize:14px;">
-            <option value="">所有状态</option>
-            <option value="pending">待发货</option>
-            <option value="shipped">已发货</option>
-            <option value="completed">已完成</option>
-            <option value="cancelled">已取消</option>
-        </select>
-    </div>
-
-    <!-- ==================== 订单管理 ==================== -->
-    <div v-show="currentTab === 'orders'" style="background:white;padding:25px;borderRadius:10px;boxShadow:'0 2px 8px rgba(0,0,0,0.1)';">
-        <div style="display:flex;justifyContent:spaceBetween;alignItems:center;marginBottom:20px;">
-            <h2 style="color:#28a745;fontSize:24px;margin:0;">📦 订单列表（共 {{ getFilteredOrders().length }} 条）</h2>
-            <button v-if="selectedOrders.length > 0" @click="batchDeleteOrders()" style="background:#dc3545;color:white;padding:8px 16px;border:none;borderRadius:6px;cursor:pointer;fontWeight:bold;">🗑️ 批量删除 ({{ selectedOrders.length }})</button>
-        </div>
-
-        <div v-if="getFilteredOrders().length === 0" style="textAlign:center;padding:60px;color:#999;">
-            <div style="fontSize:64px;marginBottom:20px;">📭</div>
-            <h3 style="fontSize:18px;marginBottom:10px;">暂无订单数据</h3>
-            <p>点击刷新按钮加载数据</p>
-        </div>
-
-        <table v-else style="width:100%;borderCollapse:collapse;background:white;boxShadow:'0 1px 3px rgba(0,0,0,0.08)';borderRadius:8px;overflow:hidden;">
-            <thead>
-                <tr style="background:#f8f9fa;">
-                    <th style="padding:14px;width:40px;"><input type="checkbox" @change="toggleSelectAllOrders"></th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">ID</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">订单号</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">买家</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">卖家</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">金额</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">状态</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(order, index) in getFilteredOrders()" :key="'o'+index" style="borderBottom:'1px solid #e9ecef';" @mouseenter="$event.currentTarget.style.background='#f8f9fa'" @mouseleave="$event.currentTarget.style.background='white'">
-                    <td style="padding:13px;textAlign:center;"><input type="checkbox" :value="order.id" v-model="selectedOrders"></td>
-                    <td style="padding:13px;"><strong>{{ order.id }}</strong></td>
-                    <td style="padding:13px;fontFamily:'monospace';fontSize:12px;color:#666;">{{ order.orderNo || '-' }}</td>
-                    <td style="padding:13px;">{{ order.buyerId || '-' }}</td>
-                    <td style="padding:13px;">{{ order.sellerId || '-' }}</td>
-                    <td style="padding:13px;color:#28a745;fontWeight:bold;">¥{{ (order.totalPrice || 0).toFixed(2) }}</td>
-                    <td style="padding:13px;">
-                        <span :style="{display:'inline-block',padding:'4px 12px',background:getStatusColor(order.orderStatus||order.status),color:'white',borderRadius:'12px',fontSize:'12px',fontWeight:'600'}">
-                            {{ getStatusText(order.orderStatus||order.status) }}
-                        </span>
-                    </td>
-                    <td style="padding:13px;">
-                        <button @click="deleteOrder(order.id)" style="background:#dc3545;color:white;padding:6px 12px;border:none;borderRadius:4px;cursor:pointer;fontSize:12px;" title="删除订单">🗑️</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- ==================== 评论管理 ==================== -->
-    <div v-show="currentTab === 'comments'" style="background:white;padding:25px;borderRadius:10px;boxShadow:'0 2px 8px rgba(0,0,0,0.1)';marginTop:25px;">
-        <div style="display:flex;justifyContent:spaceBetween;alignItems:center;marginBottom:20px;">
-            <h2 style="color:#17a2b8;fontSize:24px;margin:0;">💬 评论列表（共 {{ getFilteredComments().length }} 条）</h2>
-            <button v-if="selectedComments.length > 0" @click="batchDeleteComments()" style="background:#dc3545;color:white;padding:8px 16px;border:none;borderRadius:6px;cursor:pointer;fontWeight:bold;">🗑️ 批量删除 ({{ selectedComments.length }})</button>
-        </div>
-
-        <div v-if="getFilteredComments().length === 0" style="textAlign:center;padding:60px;color:#999;">
-            <div style="fontSize:64px;marginBottom:20px;">💬</div>
-            <h3 style="fontSize:18px;marginBottom:10px;">暂无评论数据</h3>
-            <p>点击刷新按钮加载数据</p>
-        </div>
-
-        <table v-else style="width:100%;borderCollapse:collapse;background:white;boxShadow:'0 1px 3px rgba(0,0,0,0.08)';borderRadius:8px;overflow:hidden;">
-            <thead>
-                <tr style="background:#f8f9fa;">
-                    <th style="padding:14px;width:40px;"><input type="checkbox" @change="toggleSelectAllComments"></th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">ID</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">用户ID</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">图书ID</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">评分</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">内容</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">时间</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="(comment, index) in getFilteredComments()" :key="'c'+index" style="borderBottom:'1px solid #e9ecef';" @mouseenter="$event.currentTarget.style.background='#f8f9fa'" @mouseleave="$event.currentTarget.style.background='white'">
-                    <td style="padding:13px;textAlign:center;"><input type="checkbox" :value="comment.id" v-model="selectedComments"></td>
-                    <td style="padding:13px;"><strong>{{ comment.id }}</strong></td>
-                    <td style="padding:13px;">{{ comment.userId || '-' }}</td>
-                    <td style="padding:13px;">{{ comment.bookId || '-' }}</td>
-                    <td style="padding:13px;">
-                        <span style="color:#ffc107;fontSize:18px;">{{ '★'.repeat(comment.score || 0) }}</span>
-                        <span style="color:#ddd;fontSize:18px;">{{ '☆'.repeat(5-(comment.score||0)) }}</span>
-                    </td>
-                    <td style="padding:13px;maxWidth:400px;lineHeight:1.5;">{{ comment.content || '-' }}</td>
-                    <td style="padding:13px;fontSize:12px;color:#888;">{{ comment.createTime || '-' }}</td>
-                    <td style="padding:13px;">
-                        <button @click="deleteComment(comment.id)" style="background:#dc3545;color:white;padding:6px 12px;border:none;borderRadius:4px;cursor:pointer;fontSize:12px;" title="删除评论">🗑️</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
     <!-- ==================== 用户管理 ==================== -->
-    <div v-show="currentTab === 'users'" style="background:white;padding:25px;borderRadius:10px;boxShadow:'0 2px 8px rgba(0,0,0,0.1)';">
-        <div style="display:flex;justifyContent:spaceBetween;alignItems:center;marginBottom:20px;">
-            <h2 style="color:#c41a1a;fontSize:24px;margin:0;">👥 用户列表（共 {{ userList.length }} 人）</h2>
-            <button @click="showUserModal=true;editingUser=null;userForm={username:'',phone:'',password:'',role:'user'}" style="background:#28a745;color:white;padding:10px 20px;border:none;borderRadius:6px;cursor:pointer;fontWeight:bold;">➕ 新增用户</button>
+    <div v-show="currentTab === 'users'" style="background:white;padding:25px;borderRadius:10px;boxShadow:0 2px 8px rgba(0,0,0,0.1);">
+        <h2 style="color:#c41a1a;marginBottom:20px;">👥 用户列表（共 {{ filteredUsers.length }} 人）</h2>
+
+        <!-- 搜索和筛选栏 -->
+        <div style="marginBottom:20px;display:flex;gap:15px;flexWrap:wrap;alignItems:center;background:#f8f9fa;padding:15px;borderRadius:8px;">
+            <input v-model="userSearch" type="text" placeholder="🔍 搜索用户名或手机号..." 
+                   style="flex:1;minWidth:250px;padding:10px 15px;border:2px solid #dee2e6;borderRadius:6px;fontSize:14px;outline:none;" 
+                   @input="userPage=1">
+            
+            <select v-model="userRoleFilter" @change="userPage=1" 
+                    style="padding:10px 15px;border:2px solid #dee2e6;borderRadius:6px;fontSize:14px;cursor:pointer;outline:none;">
+                <option value="">全部角色</option>
+                <option value="0">普通用户</option>
+                <option value="1">管理员</option>
+            </select>
+
+            <button @click="showAddUserModal=true" 
+                    style="background:#28a745;color:white;padding:10px 20px;border:none;borderRadius:6px;cursor:pointer;fontWeight:bold;fontSize:14px;">
+                ➕ 添加用户
+            </button>
         </div>
 
-        <!-- 用户表单弹窗 -->
-        <div v-if="showUserModal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justifyContent:center;alignItems:center;zIndex:9999;" @click.self="showUserModal=false">
-            <div style="background:white;padding:30px;borderRadius:12px;width:500px;maxWidth:90%;">
-                <h3 style="marginBottom:20px;color:#333;">{{ editingUser ? '✏️ 编辑用户' : '➕ 新增用户' }}</h3>
-                <form @submit.prevent="saveUser">
-                    <div style="marginBottom:15px;">
-                        <label style="display:block;marginBottom:5px;fontWeight:600;color:#333;">👤 用户名 *</label>
-                        <input type="text" v-model="userForm.username" required style="width:100%;padding:10px;border:1px solid #ddd;borderRadius:6px;fontSize:14px;">
-                    </div>
-                    <div style="marginBottom:15px;">
-                        <label style="display:block;marginBottom:5px;fontWeight:600;color:#333;">📱 手机号 *</label>
-                        <input type="tel" v-model="userForm.phone" required pattern="[0-9]{11}" style="width:100%;padding:10px;border:1px solid #ddd;borderRadius:6px;fontSize:14px;">
-                    </div>
-                    <div v-if="!editingUser" style="marginBottom:15px;">
-                        <label style="display:block;marginBottom:5px;fontWeight:600;color:#333;">🔒 密码 *</label>
-                        <input type="password" v-model="userForm.password" required minLength="6" style="width:100%;padding:10px;border:1px solid #ddd;borderRadius:6px;fontSize:14px;">
-                    </div>
-                    <div style="marginBottom:20px;">
-                        <label style="display:block;marginBottom:5px;fontWeight:600;color:#333;">🎭 角色</label>
-                        <select v-model="userForm.role" style="width:100%;padding:10px;border:1px solid #ddd;borderRadius:6px;fontSize:14px;">
-                            <option value="user">普通用户</option>
-                            <option value="admin">管理员</option>
-                        </select>
-                    </div>
-                    <div style="display:flex;gap:10px;justifyContent:flexEnd;">
-                        <button type="button" @click="showUserModal=false" style="padding:10px 24px;background:#6c757d;color:white;border:none;borderRadius:6px;cursor:pointer;">取消</button>
-                        <button type="submit" style="padding:10px 24px;background:#c41a1a;color:white;border:none;borderRadius:6px;cursor:pointer;fontWeight:bold;">💾 保存</button>
-                    </div>
-                </form>
-            </div>
+        <div v-if="loading" style="textAlign:center;padding:40px;">
+            <div style="fontSize:32px;marginBottom:10px;">⏳</div>
+            <p>加载中...</p>
         </div>
 
-        <div v-if="userList.length === 0" style="textAlign:center;padding:60px;color:#999;">
-            <div style="fontSize:64px;marginBottom:20px;">👥</div>
-            <h3 style="FontSize:18px;marginBottom:10px;">暂无用户数据</h3>
-            <p>点击刷新按钮加载数据</p>
-        </div>
-
-        <table v-else style="width:100%;borderCollapse:collapse;background:white;boxShadow:'0 1px 3px rgba(0,0,0,0.08)';borderRadius:8px;overflow:hidden;">
+        <table v-else-if="filteredUsers.length > 0" style="width:100%;borderCollapse:collapse;">
             <thead>
                 <tr style="background:#f8f9fa;">
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">ID</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">用户名</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">手机号</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">角色</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">注册时间</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">操作</th>
+                    <th style="padding:12px;textAlign:left;cursor:pointer;" @click="sortUsers('id')">
+                        ID {{ userSortKey==='id'?(userSortOrder===1?'▲':'▼'):'' }}
+                    </th>
+                    <th style="padding:12px;textAlign:left;cursor:pointer;" @click="sortUsers('username')">
+                        用户名 {{ userSortKey==='username'?(userSortOrder===1?'▲':'▼'):'' }}
+                    </th>
+                    <th style="padding:12px;textAlign:left;">手机号</th>
+                    <th style="padding:12px;textAlign:left;cursor:pointer;" @click="sortUsers('role')">
+                        角色 {{ userSortKey==='role'?(userSortOrder===1?'▲':'▼'):'' }}
+                    </th>
+                    <th style="padding:12px;textAlign:left;">操作</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(user, index) in userList" :key="'u'+index" style="borderBottom:'1px solid #e9ecef';" @mouseenter="$event.currentTarget.style.background='#f8f9fa'" @mouseleave="$event.currentTarget.style.background='white'">
-                    <td style="padding:13px;"><strong>{{ user.id }}</strong></td>
-                    <td style="padding:13px;">{{ user.username || '-' }}</td>
-                    <td style="padding:13px;">{{ user.phone || '-' }}</td>
-                    <td style="padding:13px;">
-                        <span :style="{display:'inline-block',padding:'4px 12px',background:user.role==='admin'?'#dc3545':'#28a745',color:'white',borderRadius:'12px',fontSize:'12px',fontWeight:'600'}">
-                            {{ user.role === 'admin' ? '管理员' : '普通用户' }}
+                <tr v-for="user in paginatedUsers" :key="user.id" style="borderBottom:1px solid #eee;">
+                    <td style="padding:12px;">{{ user.id }}</td>
+                    <td style="padding:12px;fontWeight:bold;color:#c41a1a;">{{ user.username }}</td>
+                    <td style="padding:12px;">{{ user.phone || '-' }}</td>
+                    <td style="padding:12px;">
+                        <span :style="{padding:'4px 12px',borderRadius:'12px',fontSize:'12px',color:'white',background:user.role==1?'#dc3545':'#28a745'}">
+                            {{ user.role == 1 ? '管理员' : '用户' }}
                         </span>
                     </td>
-                    <td style="padding:13px;fontSize:12px;color:#888;">{{ user.createTime || '-' }}</td>
-                    <td style="padding:13px;">
-                        <button @click="editUser(user)" style="background:#007bff;color:white;padding:6px 12px;border:none;borderRadius:4px;cursor:pointer;fontSize:12px;marginRight:5px;" title="编辑">✏️</button>
-                        <button @click="deleteUser(user.id)" style="background:#dc3545;color:white;padding:6px 12px;border:none;borderRadius:4px;cursor:pointer;fontSize:12px;" title="删除">🗑️</button>
+                    <td style="padding:12px;display:flex;gap:8px;">
+                        <button @click="editUser(user)" style="background:#007bff;color:white;padding:6px 12px;border:none;borderRadius:4px;cursor:pointer;fontSize:12px;">✏️ 编辑</button>
+                        <button @click="deleteUser(user.id)" style="background:#dc3545;color:white;padding:6px 12px;border:none;borderRadius:4px;cursor:pointer;fontSize:12px;">🗑️ 删除</button>
                     </td>
                 </tr>
             </tbody>
         </table>
+
+        <div v-else style="textAlign:center;padding:60px;color:#999;">
+            <div style="FontSize:64px;marginBottom:20px;">👥</div>
+            <h3>暂无用户数据</h3>
+            <p>{{ userSearch || userRoleFilter ? '尝试调整筛选条件' : '点击刷新按钮加载或添加新用户' }}</p>
+        </div>
+
+        <!-- 分页 -->
+        <div v-if="filteredUserTotalPages > 1" style="marginTop:20px;display:flex;justifyContent:center;gap:10px;alignItems:center;">
+            <button @click="userPage=Math.max(1,userPage-1)" :disabled="userPage===1" 
+                    style="padding:8px 16px;background:#007bff;color:white;border:none;borderRadius:4px;cursor:pointer;">◀️ 上一页</button>
+            <span style="lineHeight:32px;">第 {{ userPage }} / {{ filteredUserTotalPages }} 页 (共 {{ filteredUsers.length }} 条)</span>
+            <button @click="userPage=Math.min(filteredUserTotalPages,userPage+1)" :disabled="userPage>=filteredUserTotalPages" 
+                    style="padding:8px 16px;background:#007bff;color:white;border:none;borderRadius:4px;cursor:pointer;">下一页 ▶️</button>
+        </div>
     </div>
 
     <!-- ==================== 图书管理 ==================== -->
-    <div v-show="currentTab === 'books'" style="background:white;padding:25px;borderRadius:10px;boxShadow:'0 2px 8px rgba(0,0,0,0.1)';marginTop:25px;">
-        <div style="display:flex;justifyContent:spaceBetween;alignItems:center;marginBottom:20px;">
-            <h2 style="color:#c41a1a;fontSize:24px;margin:0;">📚 图书列表（共 {{ bookList.length }} 本）</h2>
-            <button @click="showBookModal=true;editingBook=null;bookForm={name:'',author:'',price:'',level:'全新',categoryId:null,sellerId:''}" style="background:#28a745;color:white;padding:10px 20px;border:none;borderRadius:6px;cursor:pointer;fontWeight:bold;">➕ 新增图书</button>
+    <div v-show="currentTab === 'books'" style="background:white;padding:25px;borderRadius:10px;boxShadow:0 2px 8px rgba(0,0,0,0.1);marginTop:20px;">
+        <h2 style="color:#28a745;marginBottom:20px;">📚 图书列表（共 {{ filteredBooks.length }} 本）</h2>
+
+        <!-- 搜索和筛选栏 -->
+        <div style="marginBottom:20px;display:flex;gap:15px;flexWrap:wrap;alignItems:center;background:#f8f9fa;padding:15px;borderRadius:8px;">
+            <input v-model="bookSearch" type="text" placeholder="🔍 搜索书名或作者..." 
+                   style="flex:1;minWidth:250px;padding:10px 15px;border:2px solid #dee2e6;borderRadius:6px;fontSize:14px;outline:none;"
+                   @input="bookPage=1">
+
+            <select v-model="bookLevelFilter" @change="bookPage=1"
+                    style="padding:10px 15px;border:2px solid #dee2e6;borderRadius:6px;fontSize:14px;cursor:pointer;outline:none;">
+                <option value="">全部成色</option>
+                <option value="全新">全新</option>
+                <option value="几乎全新">几乎全新</option>
+                <option value="轻微使用痕迹">轻微使用痕迹</option>
+                <option value="明显使用痕迹">明显使用痕迹</option>
+            </select>
+
+            <select v-model="bookPriceFilter" @change="bookPage=1"
+                    style="padding:10px 15px;border:2px solid #dee2e6;borderRadius:6px;fontSize:14px;cursor:pointer;outline:none;">
+                <option value="">全部价格</option>
+                <option value="0-50">¥50以下</option>
+                <option value="50-100">¥50-100</option>
+                <option value="100+">¥100以上</option>
+            </select>
+
+            <button @click="showAddBookModal=true" 
+                    style="background:#28a745;color:white;padding:10px 20px;border:none;borderRadius:6px;cursor:pointer;fontWeight:bold;fontSize:14px;">
+                ➕ 添加图书
+            </button>
         </div>
 
-        <!-- 图书表单弹窗 -->
-        <div v-if="showBookModal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justifyContent:center;alignItems:center;zIndex:9999;" @click.self="showBookModal=false">
-            <div style="background:white;padding:30px;borderRadius:12px;width:550px;maxWidth:90%;maxHeight:90vh;overflowY:auto;">
-                <h3 style="marginBottom:20px;color:#333;">{{ editingBook ? '✏️ 编辑图书' : '➕ 新增图书' }}</h3>
-                <form @submit.prevent="saveBook">
-                    <div style="marginBottom:15px;">
-                        <label style="display:block;marginBottom:5px;fontWeight:600;color:#333;">📖 书名 *</label>
-                        <input type="text" v-model="bookForm.name" required style="width:100%;padding:10px;border:1px solid #ddd;borderRadius:6px;fontSize:14px;">
-                    </div>
-                    <div style="marginBottom:15px;">
-                        <label style="display:block;marginBottom:5px;fontWeight:600;color:#333;">✍️ 作者</label>
-                        <input type="text" v-model="bookForm.author" style="width:100%;padding:10px;border:1px solid #ddd;borderRadius:6px;fontSize:14px;">
-                    </div>
-                    <div style="display:grid;gridTemplateColumns:1fr 1fr;gap:15px;marginBottom:15px;">
-                        <div>
-                            <label style="display:block;marginBottom:5px;fontWeight:600;color:#333;">💰 价格 *</label>
-                            <input type="number" step="0.01" v-model.number="bookForm.price" required min="0" style="width:100%;padding:10px;border:1px solid #ddd;borderRadius:6px;fontSize:14px;">
-                        </div>
-                        <div>
-                            <label style="display:block;marginBottom:5px;fontWeight:600;color:#333;">⭐ 成色</label>
-                            <select v-model="bookForm.level" style="width:100%;padding:10px;border:1px solid #ddd;borderRadius:6px;fontSize:14px;">
-                                <option value="全新">全新</option>
-                                <option value="九五新">九五新</option>
-                                <option value="九成新">九成新</option>
-                                <option value="八成新">八成新</option>
-                                <option value="七成新">七成新</option>
-                                <option value="六成新">六成新</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div style="marginBottom:15px;">
-                        <label style="display:block;marginBottom:5px;fontWeight:600;color:#333;">👤 卖家ID *</label>
-                        <input type="number" v-model.number="bookForm.sellerId" required style="width:100%;padding:10px;border:1px solid #ddd;borderRadius:6px;fontSize:14px;">
-                    </div>
-                    <div style="marginBottom:20px;">
-                        <label style="display:flex;alignItems:center;gap:8px;cursor:pointer;">
-                            <input type="checkbox" v-model="bookForm.status" true-value="在售" false-value="下架" style="width:18px;height:18px;">
-                            <span style="fontWeight:600;color:#333;">在售状态</span>
-                        </label>
-                    </div>
-                    <div style="display:flex;gap:10px;justifyContent:flexEnd;">
-                        <button type="button" @click="showBookModal=false" style="padding:10px 24px;background:#6c757d;color:white;border:none;borderRadius:6px;cursor:pointer;">取消</button>
-                        <button type="submit" style="padding:10px 24px;background:#c41a1a;color:white;border:none;borderRadius:6px;cursor:pointer;fontWeight:bold;">💾 保存</button>
-                    </div>
-                </form>
-            </div>
+        <div v-if="loading" style="textAlign:center;padding:40px;">
+            <div style="FontSize:32px;marginBottom:10px;">⏳</div>
+            <p>加载中...</p>
         </div>
 
-        <div v-if="bookList.length === 0" style="textAlign:center;padding:60px;color:#999;">
-            <div style="FontSize:64px;marginBottom:20px;">📚</div>
-            <h3 style="FontSize:18px;marginBottom:10px;">暂无图书数据</h3>
-            <p>点击刷新按钮加载数据</p>
-        </div>
-
-        <table v-else style="width:100%;borderCollapse:collapse;background:white;boxShadow:'0 1px 3px rgba(0,0,0,0.08)';borderRadius:8px;overflow:hidden;">
+        <table v-else-if="filteredBooks.length > 0" style="width:100%;borderCollapse:collapse;">
             <thead>
                 <tr style="background:#f8f9fa;">
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">ID</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">书名</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">作者</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">价格</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">成色</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">状态</th>
-                    <th style="padding:14px;textAlign:left;fontWeight:600;color:#495057;">操作</th>
+                    <th style="padding:12px;textAlign:left;cursor:pointer;" @click="sortBooks('id')">
+                        ID {{ bookSortKey==='id'?(bookSortOrder===1?'▲':'▼'):'' }}
+                    </th>
+                    <th style="padding:12px;textAlign:left;cursor:pointer;" @click="sortBooks('name')">
+                        书名 {{ bookSortKey==='name'?(bookSortOrder===1?'▲':'▼'):'' }}
+                    </th>
+                    <th style="padding:12px;textAlign:left;">作者</th>
+                    <th style="padding:12px;textAlign:left;cursor:pointer;" @click="sortBooks('price')">
+                        价格 {{ bookSortKey==='price'?(bookSortOrder===1?'▲':'▼'):'' }}
+                    </th>
+                    <th style="padding:12px;textAlign:left;">成色</th>
+                    <th style="padding:12px;textAlign:left;">操作</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(book, index) in bookList" :key="'b'+index" style="borderBottom:'1px solid #e9ecef';" @mouseenter="$event.currentTarget.style.background='#f8f9fa'" @mouseleave="$event.currentTarget.style.background='white'">
-                    <td style="padding:13px;"><strong>{{ book.id }}</strong></td>
-                    <td style="padding:13px;fontWeight:500;">{{ book.name || '-' }}</td>
-                    <td style="padding:13px;color:#666;">{{ book.author || '-' }}</td>
-                    <td style="padding:13px;color:#28a745;fontWeight:bold;">¥{{ (book.price || 0).toFixed(2) }}</td>
-                    <td style="padding:13px;">
-                        <span :style="{display:'inline-block',padding:'4px 8px',background:'#e9ecef',color:'#495057',borderRadius:'6px',fontSize:'12px'}">
-                            {{ book.level || '未知' }}
-                        </span>
-                    </td>
-                    <td style="padding:13px;">
-                        <span :style="{display:'inline-block',padding:'4px 12px',background:(book.status==='在售')?'#28a745':'#dc3545',color:'white',borderRadius:'12px',fontSize:'12px',fontWeight:'600'}">
-                            {{ book.status || '未知' }}
-                        </span>
-                    </td>
-                    <td style="padding:13px;">
-                        <button @click="editBook(book)" style="background:#007bff;color:white;padding:6px 12px;border:none;borderRadius:4px;cursor:pointer;fontSize:12px;marginRight:5px;" title="编辑">✏️</button>
-                        <button @click="deleteBook(book.id)" style="background:#dc3545;color:white;padding:6px 12px;border:none;borderRadius:4px;cursor:pointer;fontSize:12px;" title="删除">🗑️</button>
+                <tr v-for="book in paginatedBooks" :key="book.id" style="borderBottom:1px solid #eee;">
+                    <td style="padding:12px;">{{ book.id }}</td>
+                    <td style="padding:12px;fontWeight:bold;color:#1976d2;">{{ book.name }}</td>
+                    <td style="padding:12px;">{{ book.author || '-' }}</td>
+                    <td style="padding:12px;color:#28a745;fontWeight:bold;">¥{{ Number(book.price||0).toFixed(2) }}</td>
+                    <td style="padding:12px;"><span style="padding:3px 8px;background:#fff3cd;color:#856404;borderRadius:4px;fontSize:11px;">{{ book.level || '-' }}</span></td>
+                    <td style="padding:12px;display:flex;gap:8px;">
+                        <button @click="editBook(book)" style="background:#007bff;color:white;padding:6px 12px;border:none;borderRadius:4px;cursor:pointer;fontSize:12px;">✏️ 编辑</button>
+                        <button @click="deleteBook(book.id)" style="background:#dc3545;color:white;padding:6px 12px;border:none;borderRadius:4px;cursor:pointer;fontSize:12px;">🗑️ 删除</button>
                     </td>
                 </tr>
             </tbody>
         </table>
+
+        <div v-else style="textAlign:center;padding:60px;color:#999;">
+            <div style="FontSize:64px;marginBottom:20px;">📚</div>
+            <h3>暂无图书数据</h3>
+            <p>{{ bookSearch || bookLevelFilter || bookPriceFilter ? '尝试调整筛选条件' : '点击刷新按钮加载或添加新图书' }}</p>
+        </div>
+
+        <!-- 分页 -->
+        <div v-if="filteredBookTotalPages > 1" style="marginTop:20px;display:flex;justifyContent:center;gap:10px;alignItems:center;">
+            <button @click="bookPage=Math.max(1,bookPage-1)" :disabled="bookPage===1" 
+                    style="padding:8px 16px;background:#007bff;color:white;border:none;borderRadius:4px;cursor:pointer;">◀️ 上一页</button>
+            <span style="lineHeight:32px;">第 {{ bookPage }} / {{ filteredBookTotalPages }} 页 (共 {{ filteredBooks.length }} 条)</span>
+            <button @click="bookPage=Math.min(filteredBookTotalPages,bookPage+1)" :disabled="bookPage>=filteredBookTotalPages" 
+                    style="padding:8px 16px;background:#007bff;color:white;border:none;borderRadius:4px;cursor:pointer;">下一页 ▶️</button>
+        </div>
+    </div>
+
+    <!-- ==================== 订单管理 ==================== -->
+    <div v-show="currentTab === 'orders'" style="background:white;padding:25px;borderRadius:10px;boxShadow:0 2px 8px rgba(0,0,0,0.1);marginTop:20px;">
+        <h2 style="color:#17a2b8;marginBottom:20px;">📦 订单列表（共 {{ filteredOrders.length }} 条）</h2>
+
+        <!-- 搜索和筛选栏 -->
+        <div style="marginBottom:20px;display:flex;gap:15px;flexWrap:wrap;alignItems:center;background:#f8f9fa;padding:15px;borderRadius:8px;">
+            <input v-model="orderSearch" type="text" placeholder="🔍 搜索订单号..." 
+                   style="flex:1;minWidth:250px;padding:10px 15px;border:2px solid #dee2e6;borderRadius:6px;fontSize:14px;outline:none;"
+                   @input="orderPage=1">
+
+            <select v-model="orderStatusFilter" @change="orderPage=1"
+                    style="padding:10px 15px;border:2px solid #dee2e6;borderRadius:6px;fontSize:14px;cursor:pointer;outline:none;">
+                <option value="">全部状态</option>
+                <option value="pending">待发货</option>
+                <option value="shipped">已发货</option>
+                <option value="received">已收货</option>
+                <option value="cancelled">已取消</option>
+            </select>
+
+            <select v-model="orderPriceFilter" @change="orderPage=1"
+                    style="padding:10px 15px;border:2px solid #dee2e6;borderRadius:6px;fontSize:14px;cursor:pointer;outline:none;">
+                <option value="">全部金额</option>
+                <option value="0-100">¥100以下</option>
+                <option value="100-500">¥100-500</option>
+                <option value="500+">¥500以上</option>
+            </select>
+        </div>
+
+        <div v-if="loading" style="textAlign:center;padding:40px;">
+            <div style="FontSize:32px;marginBottom:10px;">⏳</div>
+            <p>加载中...</p>
+        </div>
+
+        <table v-else-if="filteredOrders.length > 0" style="width:100%;borderCollapse:collapse;">
+            <thead>
+                <tr style="background:#f8f9fa;">
+                    <th style="padding:12px;textAlign:left;">ID</th>
+                    <th style="padding:12px;textAlign:left;">订单号</th>
+                    <th style="padding:12px;textAlign:left;">买家ID</th>
+                    <th style="padding:12px;textAlign:left;">卖家ID</th>
+                    <th style="padding:12px;textAlign:left;cursor:pointer;" @click="sortOrders('totalPrice')">
+                        金额 {{ orderSortKey==='totalPrice'?(orderSortOrder===1?'▲':'▼'):'' }}
+                    </th>
+                    <th style="padding:12px;textAlign:left;cursor:pointer;" @click="sortOrders('status')">
+                        状态 {{ orderSortKey==='status'?(orderSortOrder===1?'▲':'▼'):'' }}
+                    </th>
+                    <th style="padding:12px;textAlign:left;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="order in paginatedOrders" :key="order.id" style="borderBottom:1px solid #eee;">
+                    <td style="padding:12px;">{{ order.id }}</td>
+                    <td style="padding:12px;fontFamily:monospace;fontSize:12px;">{{ order.orderNo || '-' }}</td>
+                    <td style="padding:12px;">{{ order.buyerId || '-' }}</td>
+                    <td style="padding:12px;">{{ order.sellerId || '-' }}</td>
+                    <td style="padding:12px;color:#28a745;fontWeight:bold;">¥{{ Number(order.totalPrice||0).toFixed(2) }}</td>
+                    <td style="padding:12px;">
+                        <span :style="{padding:'4px 12px',borderRadius:'12px',fontSize:'12px',color:'white',background:getStatusColor(order.status)}">
+                            {{ getStatusText(order.status) }}
+                        </span>
+                    </td>
+                    <td style="padding:12px;display:flex;gap:8px;">
+                        <button v-if="order.status==='pending'||order.status==='shipped'" @click="updateOrderStatus(order.id,'cancelled')" 
+                                style="background:#6c757d;color:white;padding:6px 12px;border:none;borderRadius:4px;cursor:pointer;fontSize:12px;">❌ 取消</button>
+                        <button @click="deleteOrder(order.id)" style="background:#dc3545;color:white;padding:6px 12px;border:none;borderRadius:4px;cursor:pointer;fontSize:12px;">🗑️ 删除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div v-else style="textAlign:center;padding:60px;color:#999;">
+            <div style="FontSize:64px;marginBottom:20px;">📭</div>
+            <h3>暂无订单数据</h3>
+            <p>{{ orderSearch || orderStatusFilter || orderPriceFilter ? '尝试调整筛选条件' : '点击刷新按钮加载' }}</p>
+        </div>
+
+        <!-- 分页 -->
+        <div v-if="filteredOrderTotalPages > 1" style="marginTop:20px;display:flex;justifyContent:center;gap:10px;alignItems:center;">
+            <button @click="orderPage=Math.max(1,orderPage-1)" :disabled="orderPage===1" 
+                    style="padding:8px 16px;background:#007bff;color:white;border:none;borderRadius:4px;cursor:pointer;">◀️ 上一页</button>
+            <span style="lineHeight:32px;">第 {{ orderPage }} / {{ filteredOrderTotalPages }} 页 (共 {{ filteredOrders.length }} 条)</span>
+            <button @click="orderPage=Math.min(filteredOrderTotalPages,orderPage+1)" :disabled="orderPage>=filteredOrderTotalPages" 
+                    style="padding:8px 16px;background:#007bff;color:white;border:none;borderRadius:4px;cursor:pointer;">下一页 ▶️</button>
+        </div>
+    </div>
+
+    <!-- ==================== 评论管理 ==================== -->
+    <div v-show="currentTab === 'comments'" style="background:white;padding:25px;borderRadius:10px;boxShadow:0 2px 8px rgba(0,0,0,0.1);marginTop:20px;">
+        <h2 style="color:#ffc107;marginBottom:20px;">💬 评论列表（共 {{ filteredComments.length }} 条）</h2>
+
+        <!-- 搜索和筛选栏 -->
+        <div style="marginBottom:20px;display:flex;gap:15px;flexWrap:wrap;alignItems:center;background:#f8f9fa;padding:15px;borderRadius:8px;">
+            <input v-model="commentSearch" type="text" placeholder="🔍 搜索评论内容..." 
+                   style="flex:1;minWidth:250px;padding:10px 15px;border:2px solid #dee2e6;borderRadius:6px;fontSize:14px;outline:none;"
+                   @input="commentPage=1">
+
+            <select v-model="commentScoreFilter" @change="commentPage=1"
+                    style="padding:10px 15px;border:2px solid #dee2e6;borderRadius:6px;fontSize:14px;cursor:pointer;outline:none;">
+                <option value="">全部评分</option>
+                <option value="5">⭐⭐⭐⭐⭐ 5星</option>
+                <option value="4">⭐⭐⭐⭐ 4星</option>
+                <option value="3">⭐⭐⭐ 3星</option>
+                <option value="2">⭐⭐ 2星</option>
+                <option value="1">⭐ 1星</option>
+            </select>
+        </div>
+
+        <div v-if="loading" style="textAlign:center;padding:40px;">
+            <div style="FontSize:32px;marginBottom:10px;">⏳</div>
+            <p>加载中...</p>
+        </div>
+
+        <table v-else-if="filteredComments.length > 0" style="width:100%;borderCollapse:collapse;">
+            <thead>
+                <tr style="background:#f8f9fa;">
+                    <th style="padding:12px;textAlign:left;">ID</th>
+                    <th style="padding:12px;textAlign:left;">用户ID</th>
+                    <th style="padding:12px;textAlign:left;">图书ID</th>
+                    <th style="padding:12px;textAlign:left;cursor:pointer;" @click="sortComments('score')">
+                        评分 {{ commentSortKey==='score'?(commentSortOrder===1?'▲':'▼'):'' }}
+                    </th>
+                    <th style="padding:12px;textAlign:left;">内容</th>
+                    <th style="padding:12px;textAlign:left;">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="comment in paginatedComments" :key="comment.id" style="borderBottom:1px solid #eee;">
+                    <td style="padding:12px;">{{ comment.id }}</td>
+                    <td style="padding:12px;">{{ comment.userId || '-' }}</td>
+                    <td style="padding:12px;">{{ comment.bookId || '-' }}</td>
+                    <td style="padding:12px;"><span style="color:#ffc107;">{{ '★'.repeat(comment.score||0) }}{{ '☆'.repeat(5-(comment.score||0)) }}</span></td>
+                    <td style="padding:12px;maxWidth:300px;">{{ comment.content || '-' }}</td>
+                    <td style="padding:12px;">
+                        <button @click="deleteComment(comment.id)" style="background:#dc3545;color:white;padding:6px 12px;border:none;borderRadius:4px;cursor:pointer;fontSize:12px;">🗑️ 删除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div v-else style="textAlign:center;padding:60px;color:#999;">
+            <div style="FontSize:64px;marginBottom:20px;">💬</div>
+            <h3>暂无评论数据</h3>
+            <p>{{ commentSearch || commentScoreFilter ? '尝试调整筛选条件' : '点击刷新按钮加载' }}</p>
+        </div>
+
+        <!-- 分页 -->
+        <div v-if="filteredCommentTotalPages > 1" style="marginTop:20px;display:flex;justifyContent:center;gap:10px;alignItems:center;">
+            <button @click="commentPage=Math.max(1,commentPage-1)" :disabled="commentPage===1" 
+                    style="padding:8px 16px;background:#007bff;color:white;border:none;borderRadius:4px;cursor:pointer;">◀️ 上一页</button>
+            <span style="lineHeight:32px;">第 {{ commentPage }} / {{ filteredCommentTotalPages }} 页 (共 {{ filteredComments.length }} 条)</span>
+            <button @click="commentPage=Math.min(filteredCommentTotalPages,commentPage+1)" :disabled="commentPage>=filteredCommentTotalPages" 
+                    style="padding:8px 16px;background:#007bff;color:white;border:none;borderRadius:4px;cursor:pointer;">下一页 ▶️</button>
+        </div>
+    </div>
+
+    <!-- ========== 添加/编辑用户弹窗 ========== -->
+    <div v-if="showAddUserModal || showEditUserModal" 
+         style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;alignItems:center;justifyContent:center;zIndex:9999;"
+         @click.self="closeUserModal">
+        <div style="background:white;padding:30px;borderRadius:12px;width:90%;maxWidth:500px;maxHeight:90vh;overflowY:auto;">
+            <h3 style="marginBottom:20px;color:#c41a1a;">{{ showEditUserModal ? '✏️ 编辑用户' : '➕ 添加用户' }}</h3>
+            
+            <div style="marginBottom:15px;">
+                <label style="display:block;marginBottom:5px;fontWeight:bold;">用户名 *</label>
+                <input v-model="currentUser.username" type="text" placeholder="请输入用户名"
+                       style="width:100%;padding:10px;border:2px solid #dee2e6;borderRadius:6px;outline:none;">
+            </div>
+
+            <div v-if="!showEditUserModal" style="marginBottom:15px;">
+                <label style="display:block;marginBottom:5px;fontWeight:bold;">密码 *</label>
+                <input v-model="currentUser.password" type="password" placeholder="请输入密码"
+                       style="width:100%;padding:10px;border:2px solid #dee2e6;borderRadius:6px;outline:none;">
+            </div>
+
+            <div style="marginBottom:15px;">
+                <label style="display:block;marginBottom:5px;fontWeight:bold;">手机号</label>
+                <input v-model="currentUser.phone" type="text" placeholder="请输入手机号"
+                       style="width:100%;padding:10px;border:2px solid #dee2e6;borderRadius:6px;outline:none;">
+            </div>
+
+            <div style="marginBottom:20px;">
+                <label style="display:block;marginBottom:5px;fontWeight:bold;">角色 *</label>
+                <select v-model.number="currentUser.role" 
+                        style="width:100%;padding:10px;border:2px solid #dee2e6;borderRadius:6px;outline:none;">
+                    <option :value="0">普通用户</option>
+                    <option :value="1">管理员</option>
+                </select>
+            </div>
+
+            <div style="display:flex;gap:10px;justifyContent:flexEnd;">
+                <button @click="closeUserModal" 
+                        style="padding:10px 20px;background:#6c757d;color:white;border:none;borderRadius:6px;cursor:pointer;">取消</button>
+                <button @click="saveUser" 
+                        style="padding:10px 20px;background:#c41a1a;color:white;border:none;borderRadius:6px;cursor:pointer;fontWeight:bold;">
+                    {{ showEditUserModal ? '保存修改' : '确认添加' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 添加/编辑图书弹窗 ========== -->
+    <div v-if="showAddBookModal || showEditBookModal" 
+         style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;alignItems:center;justifyContent:center;zIndex:9999;"
+         @click.self="closeBookModal">
+        <div style="background:white;padding:30px;borderRadius:12px;width:90%;maxWidth:600px;maxHeight:90vh;overflowY:auto;">
+            <h3 style="marginBottom:20px;color:#28a745;">{{ showEditBookModal ? '✏️ 编辑图书' : '➕ 添加图书' }}</h3>
+            
+            <div style="marginBottom:15px;">
+                <label style="display:block;marginBottom:5px;fontWeight:bold;">书名 *</label>
+                <input v-model="currentBook.name" type="text" placeholder="请输入书名"
+                       style="width:100%;padding:10px;border:2px solid #dee2e6;borderRadius:6px;outline:none;">
+            </div>
+
+            <div style="marginBottom:15px;">
+                <label style="display:block;marginBottom:5px;fontWeight:bold;">作者</label>
+                <input v-model="currentBook.author" type="text" placeholder="请输入作者"
+                       style="width:100%;padding:10px;border:2px solid #dee2e6;borderRadius:6px;outline:none;">
+            </div>
+
+            <div style="marginBottom:15px;">
+                <label style="display:block;marginBottom:5px;fontWeight:bold;">价格 * (元)</label>
+                <input v-model.number="currentBook.price" type="number" step="0.01" min="0" placeholder="请输入价格"
+                       style="width:100%;padding:10px;border:2px solid #dee2e6;borderRadius:6px;outline:none;">
+            </div>
+
+            <div style="marginBottom:15px;">
+                <label style="display:block;marginBottom:5px;fontWeight:bold;">成色</label>
+                <select v-model="currentBook.level" 
+                        style="width:100%;padding:10px;border:2px solid #dee2e6;borderRadius:6px;outline:none;">
+                    <option value="">请选择成色</option>
+                    <option value="全新">全新</option>
+                    <option value="几乎全新">几乎全新</option>
+                    <option value="轻微使用痕迹">轻微使用痕迹</option>
+                    <option value="明显使用痕迹">明显使用痕迹</option>
+                </select>
+            </div>
+
+            <div style="marginBottom:15px;">
+                <label style="display:block;marginBottom:5px;fontWeight:bold;">描述</label>
+                <textarea v-model="currentBook.description" rows="3" placeholder="请输入图书描述"
+                          style="width:100%;padding:10px;border:2px solid #dee2e6;borderRadius:6px;outline:none;resize:vertical;"></textarea>
+            </div>
+
+            <div style="marginBottom:20px;">
+                <label style="display:block;marginBottom:5px;fontWeight:bold;">卖家ID *</label>
+                <input v-model.number="currentBook.sellerId" type="number" placeholder="请输入卖家ID"
+                       style="width:100%;padding:10px;border:2px solid #dee2e6;borderRadius:6px;outline:none;">
+            </div>
+
+            <div style="display:flex;gap:10px;justifyContent:flexEnd;">
+                <button @click="closeBookModal" 
+                        style="padding:10px 20px;background:#6c757d;color:white;border:none;borderRadius:6px;cursor:pointer;">取消</button>
+                <button @click="saveBook" 
+                        style="padding:10px 20px;background:#28a745;color:white;border:none;borderRadius:6px;cursor:pointer;fontWeight:bold;">
+                    {{ showEditBookModal ? '保存修改' : '确认添加' }}
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 `,
 
 data() {
     return {
-        currentTab: 'orders',
-        stats: { users: 0, books: 0, orders: 0, comments: 0 },
-        orderList: [],
-        commentList: [],
-        userList: [],
-        bookList: [],
-        searchText: '',
-        orderStatusFilter: '',
-        selectedOrders: [],
-        selectedComments: [],
+        currentTab: 'users',
+        loading: false,
+        pageSize: 10,
 
-        showUserModal: false,
-        showBookModal: false,
-        editingUser: null,
-        editingBook: null,
-        userForm: { username: '', phone: '', password: '', role: 'user' },
-        bookForm: { name: '', author: '', price: '', level: '全新', categoryId: null, sellerId: '', status: '在售' }
+        // 用户相关
+        userList: [],
+        userPage: 1,
+        userSearch: '',
+        userRoleFilter: '',
+        userSortKey: 'id',
+        userSortOrder: -1,
+        showAddUserModal: false,
+        showEditUserModal: false,
+        currentUser: { username: '', password: '', phone: '', role: 0 },
+
+        // 图书相关
+        bookList: [],
+        bookPage: 1,
+        bookSearch: '',
+        bookLevelFilter: '',
+        bookPriceFilter: '',
+        bookSortKey: 'id',
+        bookSortOrder: -1,
+        showAddBookModal: false,
+        showEditBookModal: false,
+        currentBook: { name: '', author: '', price: 0, level: '', description: '', sellerId: '' },
+
+        // 订单相关
+        orderList: [],
+        orderPage: 1,
+        orderSearch: '',
+        orderStatusFilter: '',
+        orderPriceFilter: '',
+        orderSortKey: 'id',
+        orderSortOrder: -1,
+
+        // 评论相关
+        commentList: [],
+        commentPage: 1,
+        commentSearch: '',
+        commentScoreFilter: '',
+        commentSortKey: 'id',
+        commentSortOrder: -1
     };
 },
 
-async mounted() {
-    console.log('✅ Admin组件已挂载');
-    await this.loadAllData();
+computed: {
+    // 用户过滤和排序
+    filteredUsers() {
+        let list = [...this.userList];
+        
+        if (this.userSearch) {
+            const search = this.userSearch.toLowerCase();
+            list = list.filter(u => 
+                (u.username && u.username.toLowerCase().includes(search)) ||
+                (u.phone && u.phone.includes(search))
+            );
+        }
+
+        if (this.userRoleFilter !== '') {
+            list = list.filter(u => String(u.role) === this.userRoleFilter);
+        }
+
+        if (this.userSortKey) {
+            list.sort((a, b) => {
+                let valA = a[this.userSortKey];
+                let valB = b[this.userSortKey];
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                if (valA < valB) return -1 * this.userSortOrder;
+                if (valA > valB) return 1 * this.userSortOrder;
+                return 0;
+            });
+        }
+        
+        return list;
+    },
+
+    paginatedUsers() {
+        const start = (this.userPage - 1) * this.pageSize;
+        return this.filteredUsers.slice(start, start + this.pageSize);
+    },
+
+    filteredUserTotalPages() {
+        return Math.ceil(this.filteredUsers.length / this.pageSize) || 1;
+    },
+
+    // 图书过滤和排序
+    filteredBooks() {
+        let list = [...this.bookList];
+
+        if (this.bookSearch) {
+            const search = this.bookSearch.toLowerCase();
+            list = list.filter(b =>
+                (b.name && b.name.toLowerCase().includes(search)) ||
+                (b.author && b.author.toLowerCase().includes(search))
+            );
+        }
+
+        if (this.bookLevelFilter) {
+            list = list.filter(b => b.level === this.bookLevelFilter);
+        }
+
+        if (this.bookPriceFilter) {
+            if (this.bookPriceFilter === '0-50') {
+                list = list.filter(b => Number(b.price) < 50);
+            } else if (this.bookPriceFilter === '50-100') {
+                list = list.filter(b => Number(b.price) >= 50 && Number(b.price) <= 100);
+            } else if (this.bookPriceFilter === '100+') {
+                list = list.filter(b => Number(b.price) > 100);
+            }
+        }
+
+        if (this.bookSortKey) {
+            list.sort((a, b) => {
+                let valA = a[this.bookSortKey];
+                let valB = b[this.bookSortKey];
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                if (valA < valB) return -1 * this.bookSortOrder;
+                if (valA > valB) return 1 * this.bookSortOrder;
+                return 0;
+            });
+        }
+
+        return list;
+    },
+
+    paginatedBooks() {
+        const start = (this.bookPage - 1) * this.pageSize;
+        return this.filteredBooks.slice(start, start + this.pageSize);
+    },
+
+    filteredBookTotalPages() {
+        return Math.ceil(this.filteredBooks.length / this.pageSize) || 1;
+    },
+
+    // 订单过滤和排序
+    filteredOrders() {
+        let list = [...this.orderList];
+
+        if (this.orderSearch) {
+            const search = this.orderSearch.toLowerCase();
+            list = list.filter(o => o.orderNo && o.orderNo.toLowerCase().includes(search));
+        }
+
+        if (this.orderStatusFilter) {
+            list = list.filter(o => o.status === this.orderStatusFilter);
+        }
+
+        if (this.orderPriceFilter) {
+            if (this.orderPriceFilter === '0-100') {
+                list = list.filter(o => Number(o.totalPrice) < 100);
+            } else if (this.orderPriceFilter === '100-500') {
+                list = list.filter(o => Number(o.totalPrice) >= 100 && Number(o.totalPrice) <= 500);
+            } else if (this.orderPriceFilter === '500+') {
+                list = list.filter(o => Number(o.totalPrice) > 500);
+            }
+        }
+
+        if (this.orderSortKey) {
+            list.sort((a, b) => {
+                let valA = a[this.orderSortKey];
+                let valB = b[this.orderSortKey];
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                if (valA < valB) return -1 * this.orderSortOrder;
+                if (valA > valB) return 1 * this.orderSortOrder;
+                return 0;
+            });
+        }
+
+        return list;
+    },
+
+    paginatedOrders() {
+        const start = (this.orderPage - 1) * this.pageSize;
+        return this.filteredOrders.slice(start, start + this.pageSize);
+    },
+
+    filteredOrderTotalPages() {
+        return Math.ceil(this.filteredOrders.length / this.pageSize) || 1;
+    },
+
+    // 评论过滤和排序
+    filteredComments() {
+        let list = [...this.commentList];
+
+        if (this.commentSearch) {
+            const search = this.commentSearch.toLowerCase();
+            list = list.filter(c => c.content && c.content.toLowerCase().includes(search));
+        }
+
+        if (this.commentScoreFilter) {
+            list = list.filter(c => String(c.score) === this.commentScoreFilter);
+        }
+
+        if (this.commentSortKey) {
+            list.sort((a, b) => {
+                let valA = a[this.commentSortKey];
+                let valB = b[this.commentSortKey];
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+                if (valA < valB) return -1 * this.commentSortOrder;
+                if (valA > valB) return 1 * this.commentSortOrder;
+                return 0;
+            });
+        }
+
+        return list;
+    },
+
+    paginatedComments() {
+        const start = (this.commentPage - 1) * this.pageSize;
+        return this.filteredComments.slice(start, start + this.pageSize);
+    },
+
+    filteredCommentTotalPages() {
+        return Math.ceil(this.filteredComments.length / this.pageSize) || 1;
+    }
+},
+
+mounted() {
+    console.log('✅ Admin mounted');
+    this.loadAllData();
 },
 
 methods: {
     async loadAllData() {
-        console.log('🔄 开始加载所有数据...');
+        console.log('🔄 Loading data...');
+        this.loading = true;
 
         try {
-            const [statsRes, usersRes, booksRes, ordersRes, commentsRes] = await Promise.all([
-                api.adminGet('/admin/stats').catch(e => ({ users: 0, books: 0, orders: 0, comments: 0 })),
-                api.adminGet('/admin/users').catch(e => []),
-                api.adminGet('/admin/books').catch(e => []),
-                api.adminGet('/admin/orders').catch(e => []),
-                api.adminGet('/admin/comments').catch(e => [])
+            const [usersRes, booksRes, ordersRes, commentsRes] = await Promise.all([
+                api.adminGet('/admin/users').catch(e => { console.error('Users error:', e); return []; }),
+                api.adminGet('/admin/books').catch(e => { console.error('Books error:', e); return []; }),
+                api.adminGet('/admin/orders').catch(e => { console.error('Orders error:', e); return []; }),
+                api.adminGet('/admin/comments').catch(e => { console.error('Comments error:', e); return []; })
             ]);
 
-            this.stats = statsRes;
-            this.userList = Array.isArray(usersRes) ? usersRes : [];
-            this.bookList = Array.isArray(booksRes) ? booksRes : [];
-            this.orderList = Array.isArray(ordersRes) ? ordersRes : [];
-            this.commentList = Array.isArray(commentsRes) ? commentsRes : [];
+            this.userList = usersRes || [];
+            this.bookList = (booksRes || []).filter(b => String(b.status) === '1');
+            this.orderList = ordersRes || [];
+            this.commentList = commentsRes || [];
 
-            console.log('✅ 数据加载完成:');
-            console.log('- 用户:', this.userList.length, '条');
-            console.log('- 图书:', this.bookList.length, '条');
-            console.log('- 订单:', this.orderList.length, '条');
-            console.log('- 评论:', this.commentList.length, '条');
-
-        } catch (error) {
-            console.error('❌ 加载数据失败:', error);
-        }
-    },
-
-    handleSearch() {
-        console.log('搜索:', this.searchText);
-    },
-
-    toggleSelectAllOrders(event) {
-        if (event.target.checked) {
-            this.selectedOrders = this.getFilteredOrders().map(o => o.id);
-        } else {
-            this.selectedOrders = [];
-        }
-    },
-
-    toggleSelectAllComments(event) {
-        if (event.target.checked) {
-            this.selectedComments = this.getFilteredComments().map(c => c.id);
-        } else {
-            this.selectedComments = [];
-        }
-    },
-
-    getFilteredOrders() {
-        let filtered = this.orderList;
-        
-        if (this.searchText) {
-            filtered = filtered.filter(order =>
-                order.id.toString().includes(this.searchText) ||
-                (order.orderNo && order.orderNo.toLowerCase().includes(this.searchText.toLowerCase()))
-            );
-        }
-
-        if (this.orderStatusFilter) {
-            filtered = filtered.filter(order =>
-                order.orderStatus === this.orderStatusFilter || order.status === this.orderStatusFilter
-            );
-        }
-
-        return filtered;
-    },
-
-    getFilteredComments() {
-        if (!this.searchText) return this.commentList;
-
-        return this.commentList.filter(comment =>
-            comment.id.toString().includes(this.searchText) ||
-            (comment.content && comment.content.includes(this.searchText))
-        );
-    },
-
-    async deleteOrder(orderId) {
-        if (!confirm('确定要删除这个订单吗？')) return;
-
-        try {
-            await api.adminDel(`/admin/orders/${orderId}`);
-            this.orderList = this.orderList.filter(o => o.id !== orderId);
-            alert('订单删除成功！');
-        } catch (e) {
-            alert('删除失败：' + e.message);
-        }
-    },
-
-    async batchDeleteOrders() {
-        if (this.selectedOrders.length === 0) {
-            alert('请先选择要删除的订单');
-            return;
-        }
-
-        if (!confirm(`确定要删除选中的 ${this.selectedOrders.length} 个订单吗？`)) return;
-
-        try {
-            for (const orderId of this.selectedOrders) {
-                await api.adminDel(`/admin/orders/${orderId}`);
-            }
-            this.orderList = this.orderList.filter(o => !this.selectedOrders.includes(o.id));
-            this.selectedOrders = [];
-            alert('批量删除成功！');
-        } catch (e) {
-            alert('批量删除失败：' + e.message);
-        }
-    },
-
-    async deleteComment(commentId) {
-        if (!confirm('确定要删除这条评论吗？')) return;
-
-        try {
-            await api.adminDel(`/admin/comments/${commentId}`);
-            this.commentList = this.commentList.filter(c => c.id !== commentId);
-            alert('评论删除成功！');
-        } catch (e) {
-            alert('删除失败：' + e.message);
-        }
-    },
-
-    async batchDeleteComments() {
-        if (this.selectedComments.length === 0) {
-            alert('请先选择要删除的评论');
-            return;
-        }
-
-        if (!confirm(`确定要删除选中的 ${this.selectedComments.length} 条评论吗？`)) return;
-
-        try {
-            for (const commentId of this.selectedComments) {
-                await api.adminDel(`/admin/comments/${commentId}`);
-            }
-            this.commentList = this.commentList.filter(c => !this.selectedComments.includes(c.id));
-            this.selectedComments = [];
-            alert('批量删除成功！');
-        } catch (e) {
-            alert('批量删除失败：' + e.message);
+            console.log(`✅ Data loaded: ${this.userList.length} users, ${this.bookList.length} books, ${this.orderList.length} orders, ${this.commentList.length} comments`);
+        } catch(e) {
+            console.error('❌ Load error:', e);
+            alert('加载数据失败: ' + e.message);
+        } finally {
+            this.loading = false;
         }
     },
 
     getStatusColor(status) {
-        const colors = {
-            'pending': '#ffc107',
-            'shipped': '#17a2b8',
-            'completed': '#28a745',
-            'cancelled': '#dc3545'
-        };
+        const colors = {'pending':'#ffc107','shipped':'#17a2b8','received':'#28a745','cancelled':'#dc3545'};
         return colors[status] || '#6c757d';
     },
 
     getStatusText(status) {
-        const texts = {
-            'pending': '待发货',
-            'shipped': '已发货',
-            'completed': '已完成',
-            'cancelled': '已取消'
-        };
+        const texts = {'pending':'待发货','shipped':'已发货','received':'已收货','cancelled':'已取消'};
         return texts[status] || status || '未知';
     },
 
-    // ==================== 用户管理方法 ====================
+    // 排序方法
+    sortUsers(key) {
+        if (this.userSortKey === key) {
+            this.userSortOrder *= -1;
+        } else {
+            this.userSortKey = key;
+            this.userSortOrder = 1;
+        }
+    },
+
+    sortBooks(key) {
+        if (this.bookSortKey === key) {
+            this.bookSortOrder *= -1;
+        } else {
+            this.bookSortKey = key;
+            this.bookSortOrder = 1;
+        }
+    },
+
+    sortOrders(key) {
+        if (this.orderSortKey === key) {
+            this.orderSortOrder *= -1;
+        } else {
+            this.orderSortKey = key;
+            this.orderSortOrder = 1;
+        }
+    },
+
+    sortComments(key) {
+        if (this.commentSortKey === key) {
+            this.commentSortOrder *= -1;
+        } else {
+            this.commentSortKey = key;
+            this.commentSortOrder = 1;
+        }
+    },
+
+    // ====== 用户操作 ======
+    closeUserModal() {
+        this.showAddUserModal = false;
+        this.showEditUserModal = false;
+        this.currentUser = { username: '', password: '', phone: '', role: 0 };
+    },
+
     editUser(user) {
-        this.editingUser = user;
-        this.userForm = { ...user, password: '' };
-        this.showUserModal = true;
+        this.currentUser = { ...user };
+        this.showEditUserModal = true;
     },
 
     async saveUser() {
+        if (!this.currentUser.username) {
+            alert('请输入用户名');
+            return;
+        }
+
         try {
-            if (this.editingUser) {
-                await api.adminPut(`/admin/users/${this.editingUser.id}`, this.userForm);
-                Object.assign(this.editingUser, this.userForm);
-                alert('✅ 用户更新成功！');
+            if (this.showEditUserModal) {
+                await api.adminPut(`/admin/user/${this.currentUser.id}`, this.currentUser);
+                alert('✅ 用户信息更新成功');
             } else {
-                const newUser = await api.adminPost('/admin/users', this.userForm);
-                this.userList.push(newUser);
-                alert('✅ 用户创建成功！');
+                if (!this.currentUser.password) {
+                    alert('请输入密码');
+                    return;
+                }
+                await api.adminPost('/admin/user', this.currentUser);
+                alert('✅ 用户添加成功');
             }
-            this.showUserModal = false;
+            this.closeUserModal();
             await this.loadAllData();
-        } catch (e) {
-            alert('❌ 操作失败：' + (e.message || e));
+        } catch(e) {
+            alert('❌ 操作失败: ' + e.message);
         }
     },
 
     async deleteUser(userId) {
-        if (!confirm('确定要删除这个用户吗？')) return;
-
+        if(!confirm('确定删除该用户？')) return;
         try {
-            await api.adminDel(`/admin/users/${userId}`);
-            this.userList = this.userList.filter(u => u.id !== userId);
-            alert('✅ 用户删除成功！');
-        } catch (e) {
-            alert('❌ 删除失败：' + (e.message || e));
+            await api.adminDel(`/admin/user/${userId}`);
+            alert('✅ 删除成功');
+            await this.loadAllData();
+        } catch(e) {
+            alert('❌ 删除失败: ' + e.message);
         }
     },
 
-    // ==================== 图书管理方法 ====================
+    // ====== 图书操作 ======
+    closeBookModal() {
+        this.showAddBookModal = false;
+        this.showEditBookModal = false;
+        this.currentBook = { name: '', author: '', price: 0, level: '', description: '', sellerId: '' };
+    },
+
     editBook(book) {
-        this.editingBook = book;
-        this.bookForm = { ...book };
-        this.showBookModal = true;
+        this.currentBook = { ...book };
+        this.showEditBookModal = true;
     },
 
     async saveBook() {
+        if (!this.currentBook.name) {
+            alert('请输入书名');
+            return;
+        }
+        if (!this.currentBook.price || this.currentBook.price <= 0) {
+            alert('请输入有效价格');
+            return;
+        }
+        if (!this.currentBook.sellerId) {
+            alert('请输入卖家ID');
+            return;
+        }
+
         try {
-            if (this.editingBook) {
-                await api.adminPut(`/admin/books/${this.editingBook.id}`, this.bookForm);
-                Object.assign(this.editingBook, this.bookForm);
-                alert('✅ 图书更新成功！');
+            if (this.showEditBookModal) {
+                await api.adminPut(`/admin/book/${this.currentBook.id}`, this.currentBook);
+                alert('✅ 图书信息更新成功');
             } else {
-                const newBook = await api.adminPost('/admin/books', this.bookForm);
-                this.bookList.push(newBook);
-                alert('✅ 图书创建成功！');
+                await api.adminPost('/admin/book', this.currentBook);
+                alert('✅ 图书添加成功');
             }
-            this.showBookModal = false;
+            this.closeBookModal();
             await this.loadAllData();
-        } catch (e) {
-            alert('❌ 操作失败：' + (e.message || e));
+        } catch(e) {
+            alert('❌ 操作失败: ' + e.message);
         }
     },
 
     async deleteBook(bookId) {
-        if (!confirm('确定要删除这本图书吗？')) return;
-
+        if(!confirm('确定删除该图书？')) return;
         try {
-            await api.adminDel(`/admin/books/${bookId}`);
-            this.bookList = this.bookList.filter(b => b.id !== bookId);
-            alert('✅ 图书删除成功！');
-        } catch (e) {
-            alert('❌ 删除失败：' + (e.message || e));
+            await api.adminDel(`/admin/book/${bookId}`);
+            alert('✅ 删除成功');
+            await this.loadAllData();
+        } catch(e) {
+            alert('❌ 删除失败: ' + e.message);
+        }
+    },
+
+    // ====== 订单操作 ======
+    async updateOrderStatus(orderId, status) {
+        if(!confirm(`确定要将订单状态改为"${this.getStatusText(status)}"？`)) return;
+        try {
+            await api.adminPut(`/admin/order/${orderId}/status?status=${status}`);
+            alert('✅ 状态更新成功');
+            await this.loadAllData();
+        } catch(e) {
+            alert('❌ 更新失败: ' + e.message);
+        }
+    },
+
+    async deleteOrder(orderId) {
+        if(!confirm('确定删除该订单？')) return;
+        try {
+            await api.adminDel(`/admin/order/${orderId}`);
+            alert('✅ 删除成功');
+            await this.loadAllData();
+        } catch(e) {
+            alert('❌ 删除失败: ' + e.message);
+        }
+    },
+
+    // ====== 评论操作 ======
+    async deleteComment(commentId) {
+        if(!confirm('确定删除该评论？')) return;
+        try {
+            await api.adminDel(`/admin/comment/${commentId}`);
+            alert('✅ 删除成功');
+            await this.loadAllData();
+        } catch(e) {
+            alert('❌ 删除失败: ' + e.message);
         }
     }
 }
