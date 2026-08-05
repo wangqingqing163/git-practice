@@ -2542,6 +2542,85 @@ input[type="checkbox"] {
     padding: 4px 12px;
     border-radius: 12px;
     font-size: 11px;
+}
+
+/* ==================== 管理员后台 (Admin) ==================== */
+.admin-container{max-width:1400px;margin:20px auto;padding:20px}
+.admin-container h1{color:#333;font-size:28px;margin-bottom:24px}
+
+/* 统计卡片网格 */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.stat-card{padding:24px;border-radius:12px;text-align:center;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.1)}
+.stat-users{background:linear-gradient(135deg,#667eea,#764ba2)}
+.stat-books{background:linear-gradient(135deg,#f093fb,#f5576c)}
+.stat-orders{background:linear-gradient(135deg,#4facfe,#00f2fe)}
+.stat-comments{background:linear-gradient(135deg,#43e97b,#38f9d7)}
+.stat-card>div{font-size:42px;font-weight:bold;margin-bottom:8px}
+.stat-card span{font-size:15px}
+
+/* 标签切换 */
+.tabs{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+.tabs button{padding:10px 22px;border:none;border-radius:6px;background:#f5f5f5;color:#333;font-weight:600;cursor:pointer;transition:all .2s}
+.tabs button.active{background:#c41a1a;color:#fff}
+.btn-refresh{background:#007bff;color:#fff;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600}
+
+/* 面板 */
+.panel{background:#fff;padding:22px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:20px}
+.panel h2{font-size:18px;margin-bottom:18px;color:#c41a1a}
+
+/* 工具栏 */
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;background:#f8f9fa;padding:14px;border-radius:8px;margin-bottom:16px;align-items:center}
+.toolbar input{flex:1;min-width:220px;padding:9px 14px;border:1.5px solid #dee2e6;border-radius:6px;font-size:13px;outline:none}
+.toolbar input:focus{border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1)}
+.toolbar select{padding:9px 14px;border:1.5px solid #dee2e6;border-radius:6px;font-size:13px;cursor:pointer;outline:none}
+.btn-add{background:#28a745;color:#fff;padding:9px 18px;border-radius:6px;font-weight:600;transition:all .2s}
+.btn-add:hover{background:#218838}
+
+/* 表格样式增强 */
+.panel table th{cursor:pointer;user-select:none;white-space:nowrap}
+.panel table th:hover{background:#e8e8e8}
+.panel td.actions{display:flex;gap:6px}
+.panel table button{padding:5px 11px;border-radius:4px;font-size:12px;cursor:pointer;transition:all .2s}
+.panel table button:first-child{background:#007bff;color:#fff}
+.panel table button:first-child:hover{background:#0056b3}
+.panel table button:last-child{background:#dc3545;color:#fff}
+.panel table button:last-child:hover:#c82333
+
+/* 文本辅助类 */
+.bold{font-weight:700}.red{color:#dc3545}.blue{color:#1976d2}.green{color:#28a745}
+.mono{font-family:monospace;font-size:12px}
+.max-w{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stars{color:#ffc107;letter-spacing:2px}
+
+/* 角色/状态标签 */
+.role-0,.role-1{padding:3px 10px;border-radius:12px;font-size:11px;color:#fff}
+.role-0{background:#28a745}.role-1{background:#dc3545}
+.level{padding:3px 8px;background:#fff3cd;color:#856404;border-radius:4px;font-size:11px}
+.status-pending{background:#fff7e6;color:#d48806;padding:3px 10px;border-radius:12px;font-size:11px}
+.status-shipped{background:#e6f7ff;color:#1890ff;padding:3px 10px;border-radius:12px;font-size:11px}
+.status-received{background:#f6ffed;color:#52c41a;padding:3px 10px;border-radius:12px;font-size:11px}
+.status-cancelled{background:#f5f5f5;color:#999;padding:3px 10px;border-radius:12px;font-size:11px}
+
+/* 空状态 */
+.empty{text-align:center;padding:50px;color:#999;font-size:14px}
+.empty:before{content:'';display:block;font-size:50px;margin-bottom:12px;opacity:.4}
+
+/* 分页组件 */
+.pagination{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #eee}
+.pagination button{padding:7px 15px;background:#007bff;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:13px}
+.pagination button:disabled{background:#ccc;cursor:not-allowed}
+.pagination span{font-size:13px;color:#666}
+
+/* 弹窗组件 */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:2000;display:flex;justify-content:center;align-items:center;animation:fadeIn .2s ease}
+.modal{background:#fff;border-radius:10px;width:450px;max-width:92vw;padding:26px;box-shadow:0 16px 40px rgba(0,0,0,.15);animation:modalIn .25s ease}
+.modal h3{font-size:17px;font-weight:700;margin-bottom:18px;text-align:center;color:#333}
+.modal input,.modal select,.modal textarea{width:100%;padding:10px 14px;margin-bottom:12px;border:1.5px solid #ddd;border-radius:6px;font-size:14px;outline:none;box-sizing:border-box}
+.modal input:focus,.modal select:focus,.modal textarea:focus{border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.1)}
+.modal-actions{display:flex;gap:12px;margin-top:18px}
+.modal-actions button{flex:1;padding:10px;border-radius:6px;font-weight:600;cursor:pointer}
+.btn-save{background:#c41a1a;color:#fff}
+.btn-save:hover{background:#a01515}
     font-weight: 600;
     white-space: nowrap;
     box-shadow: 0 2px 8px rgba(245, 87, 108, 0.4);

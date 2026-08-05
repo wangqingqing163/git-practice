@@ -12,10 +12,19 @@ const app = Vue.createApp({
             this.isAdmin = store.isAdmin();
             this.showLoginModal = false;
         },
+
         handleLogout() {
+            store.clearAuth();
             this.currentUser = null;
             this.isAdmin = false;
+            
+            if (window.location.hash === '#/admin') {
+                window.location.hash = '#/';
+            }
+            
+            this.showToast('已安全退出', 'success');
         },
+
         showToast(msg, type) {
             const icons = { success: '✓', error: '✗' };
             const t = document.createElement('div');
@@ -27,20 +36,40 @@ const app = Vue.createApp({
     },
     mounted() {
         const self = this;
+
+        // 页面加载时检查Token有效性
+        if (store.isLoggedIn()) {
+            if (!store.checkAndRefreshAuth()) {
+                this.showToast('登录已过期，请重新登录', 'error');
+                this.currentUser = null;
+                this.isAdmin = false;
+            }
+        }
+
         router.beforeEach((to, from, next) => {
             const user = store.getUser();
             self.currentUser = user;
             self.isAdmin = store.isAdmin();
+
+            // 管理员页面需要管理员权限和有效Token
             if (to.path === '/admin' && !self.isAdmin) {
-                self.showToast('无管理员权限', 'error');
+                self.showToast('无管理员权限或未登录', 'error');
+                
+                if (!store.getToken()) {
+                    self.showLoginModal = true;
+                }
+                
                 next('/');
                 return;
             }
-            if ((to.path === '/personal' || to.path === '/orders') && !user) {
+
+            // 个人中心和订单页面需要登录
+            if ((to.path === '/personal' || to.path === '/orders') && !store.isLoggedIn()) {
                 self.showLoginModal = true;
                 next('/');
                 return;
             }
+
             next();
         });
     }
