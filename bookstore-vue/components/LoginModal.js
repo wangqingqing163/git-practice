@@ -37,27 +37,54 @@ const LoginModal = {
         async submit() {
             if (!this.username.trim()) { this.showToast('请输入用户名', 'error'); return; }
             if (!this.password.trim()) { this.showToast('请输入密码', 'error'); return; }
+            
             try {
                 if (this.isLogin) {
-                    const data = await api.post('/user/login', { username: this.username, password: this.password });
-                    if (data.success) {
-                        store.setUser(data.user);
-                        this.$emit('login-success', data.user);
-                        this.showToast('登录成功', 'success');
-                    } else {
-                        this.showToast(data.msg || '登录失败', 'error');
-                    }
+                    await this.handleLogin();
                 } else {
-                    const data = await api.post('/user/register', { username: this.username, password: this.password, phone: this.phone, address: this.address });
-                    if (data.success) {
-                        this.showToast('注册成功，请登录', 'success');
-                        this.isLogin = true;
-                    } else {
-                        this.showToast(data.msg || '注册失败', 'error');
-                    }
+                    await this.handleRegister();
                 }
-            } catch (e) { this.showToast('网络错误', 'error'); }
+            } catch (e) {
+                this.showToast(e.message || '网络错误', 'error');
+            }
         },
+
+        async handleLogin() {
+            const data = await api.login(this.username, this.password);
+            
+            if (data.success && data.token) {
+                store.setToken(data.token);
+                store.setUser(data.user);
+                
+                console.log('✅ 登录成功，Token已保存');
+                this.$emit('login-success', data.user);
+                this.showToast('登录成功', 'success');
+
+                // 清空表单
+                this.username = '';
+                this.password = '';
+            } else {
+                throw new Error(data.msg || '登录失败');
+            }
+        },
+
+        async handleRegister() {
+            const data = await api.register({
+                username: this.username,
+                password: this.password,
+                phone: this.phone || '',
+                address: this.address || ''
+            });
+
+            if (data.success) {
+                this.showToast('注册成功，请登录', 'success');
+                this.isLogin = true;
+                this.password = '';
+            } else {
+                throw new Error(data.msg || '注册失败');
+            }
+        },
+
         showToast(msg, type) {
             const icons = { success: '✓', error: '✗' };
             const t = document.createElement('div');

@@ -1,111 +1,96 @@
 const API_BASE = '/api';
 
+function getAuthHeaders() {
+    const token = store.getToken();
+    return token ? { 'Authorization': 'Bearer ' + token } : {};
+}
+
+async function handleResponse(response) {
+    if (response.status === 401) {
+        store.clearAuth();
+        window.location.reload();
+        throw new Error('登录已过期');
+    }
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.msg || `请求失败 (${response.status})`);
+    return data;
+}
+
 const api = {
     async get(url) {
-        const res = await fetch(API_BASE + url);
-        return res.json();
+        return handleResponse(await fetch(API_BASE + url, { headers: getAuthHeaders() }));
     },
+
     async post(url, data) {
-        const res = await fetch(API_BASE + url, {
+        return handleResponse(await fetch(API_BASE + url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
-        });
-        return res.json();
+        }));
     },
+
     async put(url, data) {
-        const res = await fetch(API_BASE + url, {
+        return handleResponse(await fetch(API_BASE + url, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
-        });
-        return res.json();
+        }));
     },
-    async del(url) {
-        const res = await fetch(API_BASE + url, { method: 'DELETE' });
-        return res.json();
+
+    async del(url, data = null) {
+        const options = { method: 'DELETE', headers: getAuthHeaders() };
+        if (data) {
+            options.headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(data);
+        }
+        return handleResponse(await fetch(API_BASE + url, options));
     },
+
     async upload(url, file) {
         const formData = new FormData();
         formData.append('file', file);
-        const res = await fetch(API_BASE + url, {
+        return handleResponse(await fetch(API_BASE + url, {
             method: 'POST',
+            headers: getAuthHeaders(),
             body: formData
-        });
-        return res.json();
+        }));
     },
+
     async getCategory() {
-        try {
-            const res = await fetch('/category/list');
-            return res.json();
-        } catch (e) {
-            return [];
-        }
+        try { return await (await fetch('/category/list')).json(); }
+        catch (e) { return []; }
     },
-    async adminPost(url, data) {
-        const headers = { 'Content-Type': 'application/json' };
-        const user = store.getUser();
-        if (user && user.role === 1) {
-            headers['X-User-Role'] = '1';
-        }
-        const res = await fetch(API_BASE + url, {
+
+    // 收藏相关
+    getFavorites(userId) { return this.get('/favorite/' + userId); },
+    checkFavorite(userId, bookId) { return this.get(`/favorite/check?userId=${userId}&bookId=${bookId}`); },
+    addFavorite(userId, bookId) { return this.post('/favorite/add', { userId, bookId }); },
+    removeFavorite(userId, bookId) { return this.del('/favorite/remove', { userId, bookId }); },
+
+    // 认证专用（不携带Token）
+    async login(username, password) {
+        const res = await fetch(`${API_BASE}/user/login`, {
             method: 'POST',
-            headers,
-            body: JSON.stringify(data)
-        });
-        return res.json();
-    },
-    async adminPut(url, data) {
-        const headers = { 'Content-Type': 'application/json' };
-        const user = store.getUser();
-        if (user && user.role === 1) {
-            headers['X-User-Role'] = '1';
-        }
-        const res = await fetch(API_BASE + url, {
-            method: 'PUT',
-            headers,
-            body: JSON.stringify(data)
-        });
-        return res.json();
-    },
-    async adminDel(url) {
-        const headers = {};
-        const user = store.getUser();
-        if (user && user.role === 1) {
-            headers['X-User-Role'] = '1';
-        }
-        const res = await fetch(API_BASE + url, { method: 'DELETE', headers });
-        return res.json();
-    },
-    async adminGet(url) {
-        const headers = {};
-        const user = store.getUser();
-        if (user && user.role === 1) {
-            headers['X-User-Role'] = '1';
-        }
-        const res = await fetch(API_BASE + url, { headers });
-        return res.json();
-    },
-    
-    // 收藏相关 API
-    async getFavorites(userId) {
-        return this.get('/favorite/' + userId);
-    },
-    async checkFavorite(userId, bookId) {
-        return this.get('/favorite/check?userId=' + userId + '&bookId=' + bookId);
-    },
-    async addFavorite(userId, bookId) {
-        return this.post('/favorite/add', { userId, bookId });
-    },
-    async removeFavorite(userId, bookId) {
-        return this.delWithBody('/favorite/remove', { userId, bookId });
-    },
-    async delWithBody(url, data) {
-        const res = await fetch(API_BASE + url, {
-            method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: JSON.stringify({ username, password })
         });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({ msg: '网络错误' }));
+            throw new Error(data.msg || '登录失败');
+        }
+        return res.json();
+    },
+
+    async register(userData) {
+        const res = await fetch(`${API_BASE}/user/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({ msg: '注册失败' }));
+            throw new Error(data.msg || '注册失败');
+        }
         return res.json();
     }
 };
