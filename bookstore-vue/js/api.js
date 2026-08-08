@@ -8,7 +8,6 @@ function getAuthHeaders() {
 async function handleResponse(response) {
     if (response.status === 401) {
         store.clearAuth();
-        window.location.reload();
         throw new Error('登录已过期');
     }
     const data = await response.json();

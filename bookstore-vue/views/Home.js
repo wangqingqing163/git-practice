@@ -1,4 +1,4 @@
-const Home = {
+ const Home = {
     template: `
     <div>
         <div class="search-section">
@@ -394,10 +394,32 @@ const Home = {
         }
     },
     async mounted() {
-        await Promise.all([this.loadCategories(), this.loadBooks(), this.loadSellerRanking(), this.loadHotBooks()]);
-        this.generateCarouselSlides();
-        this.loadFavorites();
-        this.loading = false;
+        try {
+            // 并行加载所有公开数据（图书、分类等）
+            const publicDataPromises = [
+                this.loadCategories().catch(e => { console.warn('加载分类失败:', e); return []; }),
+                this.loadBooks().catch(e => { console.error('加载图书失败:', e); return []; }),
+                this.loadHotBooks().catch(e => { console.warn('加载热门图书失败:', e); return []; }),
+                this.loadSellerRanking().catch(e => { console.warn('加载卖家排行失败:', e); return []; })
+            ];
+            
+            await Promise.allSettled(publicDataPromises);
+            
+            this.generateCarouselSlides();
+            
+            // 仅在用户已登录时加载个人数据（收藏等）
+            if (store.isLoggedIn()) {
+                this.loadFavorites().catch(e => {
+                    console.warn('加载收藏列表失败（可能未登录）:', e);
+                    this.favoriteIds = [];
+                });
+            }
+        } catch (error) {
+            console.error('首页数据加载异常:', error);
+        } finally {
+            this.loading = false;
+        }
+        
         window.addEventListener('scroll', this.onScroll);
     },
     beforeUnmount() {
@@ -453,12 +475,13 @@ const Home = {
         // ==================== 卖家排行榜方法 ====================
         async loadSellerRanking() {
             try {
-                const data = await api.get('/admin/seller-ranking?limit=10');
+                // 使用公开的卖家排行榜接口（无需管理员权限）
+                const data = await api.get('/secondbook/seller-ranking?limit=10');
                 this.sellerRanking = data || [];
-                console.log('卖家排行榜:', this.sellerRanking);
+                console.log('✅ 卖家排行榜加载成功:', this.sellerRanking);
             } catch (e) {
-                console.error('加载卖家排行榜失败:', e);
-                // 如果接口不存在，使用模拟数据
+                console.warn('⚠️ 加载卖家排行榜失败，使用模拟数据:', e.message);
+                // 如果接口调用失败，使用模拟数据作为降级方案
                 this.sellerRanking = [
                     { sellerId: 2, username: '书香门第', soldCount: 15, avgScore: 4.8 },
                     { sellerId: 52, username: '知识海洋', soldCount: 12, avgScore: 4.9 },

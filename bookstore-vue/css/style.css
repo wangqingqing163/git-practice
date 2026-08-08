@@ -1680,6 +1680,8 @@ tr:hover td{background: #fafafa}
 .btn-warning:hover{background: #faad14;color: #fff}
 .btn-edit{background: #e6f7ff;color: #1890ff;border-color: #91d5ff}
 .btn-edit:hover{background: #1890ff;color: #fff}
+.btn-success{background: #f6ffed;color: #52c41a;border-color: #b7eb8f}
+.btn-success:hover{background: #52c41a;color: #fff}
 
 /* ==================== 发布横条 ==================== */
 .publish-banner{
@@ -1849,6 +1851,64 @@ tr:hover td{background: #fafafa}
     margin-bottom: 16px;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border-light);
+}
+
+/* 页面头部（包含返回按钮和标题） */
+.page-header{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.page-header .page-title{
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+    flex: 1;
+}
+
+/* 返回按钮 */
+.btn-back{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    white-space: nowrap;
+    min-width: 80px;
+}
+
+.btn-back:hover{
+    transform: translateX(-3px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.5);
+    background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+}
+
+.btn-back:active{
+    transform: translateX(-1px) scale(0.98);
+}
+
+/* 管理员页面的返回按钮特殊样式 */
+.admin-container .page-header .btn-back{
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+}
+
+.admin-container .page-header .btn-back:hover{
+    background: linear-gradient(135deg, #e083eb 0%, #e5475c 100%);
+    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.5);
 }
 
 /* ==================== 骨架屏 ==================== */
@@ -2492,18 +2552,24 @@ input[type="checkbox"] {
 .seller-profile-card {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 12px;
-    padding: 32px;
-    display: flex;
-    gap: 24px;
-    align-items: flex-start;
+    padding: 28px 32px;
     box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
     margin-bottom: 20px;
+    color: white;
+}
+
+.seller-profile-content {
+    display: flex;
+    gap: 28px;
+    align-items: flex-start;
+    margin-bottom: 24px;
 }
 
 .seller-avatar-section {
     position: relative;
     cursor: pointer;
     transition: transform 0.3s ease;
+    flex-shrink: 0;
 }
 
 .seller-avatar-section:hover {
@@ -2511,14 +2577,14 @@ input[type="checkbox"] {
 }
 
 .seller-avatar-large {
-    width: 100px;
-    height: 100px;
+    width: 96px;
+    height: 96px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.95);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 42px;
+    font-size: 40px;
     font-weight: 700;
     color: #667eea;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
@@ -2534,14 +2600,132 @@ input[type="checkbox"] {
 
 .seller-badge {
     position: absolute;
-    bottom: -4px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: -6px;
+    right: -8px;
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     color: white;
-    padding: 4px 12px;
-    border-radius: 12px;
+    padding: 5px 12px;
+    border-radius: 14px;
     font-size: 11px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(240, 147, 251, 0.4);
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.seller-info-section {
+    flex: 1;
+    min-width: 0;
+    padding-top: 4px;
+}
+
+.seller-name-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.seller-name {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-edit-profile-inline {
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+
+.btn-edit-profile-inline:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.seller-meta {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.seller-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.seller-tags .tag {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(4px);
+}
+
+.seller-tags .tag-default {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+.seller-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.seller-stats-row .stat-item {
+    text-align: center;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+}
+
+.seller-stats-row .stat-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.seller-stats-row .stat-num {
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 4px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.seller-stats-row .stat-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
 }
 
 /* ==================== 管理员后台 (Admin) ==================== */
@@ -2562,7 +2746,24 @@ input[type="checkbox"] {
 .tabs{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap}
 .tabs button{padding:10px 22px;border:none;border-radius:6px;background:#f5f5f5;color:#333;font-weight:600;cursor:pointer;transition:all .2s}
 .tabs button.active{background:#c41a1a;color:#fff}
-.btn-refresh{background:#007bff;color:#fff;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600}
+.btn-refresh{background:#007bff;color:#fff;padding:10px 22px;border-radius:6px;cursor:pointer;font-weight:600;transition:all .3s;min-width:100px}
+.btn-refresh:hover:not(:disabled){background:#0056b3;transform:translateY(-1px);box-shadow:0 4px 8px rgba(0,123,255,.3)}
+.btn-refresh:disabled{background:#ccc;cursor:not-allowed;opacity:.7}
+
+/* 加载遮罩层 */
+.loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.8);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999}
+.loading-spinner{width:50px;height:50px;border:4px solid #f3f3f3;border-top:4px solid #c41a1a;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:15px}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.loading-overlay p{color:#333;font-size:16px;font-weight:600}
+
+/* 管理员提示框 */
+.admin-toast{position:fixed;top:20px;right:20px;padding:12px 24px;border-radius:8px;color:#fff;font-weight:600;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:slideIn .3s ease-out;max-width:400px}
+.admin-toast-success{background:linear-gradient(135deg,#28a745,#20c997)}
+.admin-toast-error{background:linear-gradient(135deg,#dc3545,#ff6b6b)}
+.admin-toast-info{background:linear-gradient(135deg,#17a2b8,#6610f2)}
+.admin-toast.fade-out{animation:fadeOut .3s ease-out forwards}
+@keyframes slideIn{from{opacity:0;transform:translateX(100px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
 
 /* 面板 */
 .panel{background:#fff;padding:22px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:20px}
@@ -2626,95 +2827,7 @@ input[type="checkbox"] {
     box-shadow: 0 2px 8px rgba(245, 87, 108, 0.4);
 }
 
-.seller-info-section {
-    flex: 1;
-    color: white;
-}
 
-.seller-name {
-    margin: 0 0 10px;
-    font-size: 30px;
-    font-weight: 800;
-    color: #1a1a1a;
-    letter-spacing: 0.5px;
-    overflow: visible;
-    white-space: nowrap;
-    word-break: keep-all;
-    line-height: 1.3;
-    background: transparent;
-    padding: 0;
-}
-
-.seller-meta {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 12px;
-    font-size: 13px;
-    opacity: 0.95;
-}
-
-.meta-item {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 13px;
-    font-weight: 400;
-}
-
-.seller-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 16px;
-}
-
-.tag {
-    background: rgba(0, 0, 0, 0.35);
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-    backdrop-filter: blur(12px);
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    box-shadow: 
-        0 2px 8px rgba(0, 0, 0, 0.15),
-        inset 0 1px 2px rgba(255, 255, 255, 0.1);
-}
-
-.tag-default {
-    opacity: 0.7;
-    font-style: italic;
-}
-
-.seller-stats {
-    display: flex;
-    gap: 24px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.stat-item {
-    text-align: center;
-}
-
-.stat-item .stat-num {
-    font-size: 30px;
-    font-weight: 900;
-    color: #ffffff;
-    line-height: 1.2;
-    text-shadow: 
-        0 2px 6px rgba(0, 0, 0, 0.3),
-        0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.stat-item .stat-label {
-    font-size: 13px;
-    font-weight: 600;
-    color: #ffffff;
-    opacity: 0.95;
-    margin-top: 6px;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-}
 
 .seller-avatar-clickable {
     cursor: pointer;

@@ -22,7 +22,7 @@ const NavBar = {
     emits: ['open-login', 'logout'],
     methods: {
         logout() {
-            store.clearUser();
+            store.clearAuth();
             this.$emit('logout');
         }
     }

@@ -1,7 +1,10 @@
 const Orders = {
     template: `
     <div class="container" v-if="user">
-        <div class="page-title">我的订单</div>
+        <div class="page-header">
+            <button class="btn-back" @click="goBack" title="返回上一页">◀ 返回</button>
+            <div class="page-title">我的订单</div>
+        </div>
         <div class="chips">
             <span class="chip" :class="{ active: tab === 'buy' }" @click="tab='buy'">我买的</span>
             <span class="chip" :class="{ active: tab === 'sell' }" @click="tab='sell'; loadUrgedOrders(); loadConfirmedOrders()">我卖的</span>
@@ -178,6 +181,14 @@ const Orders = {
         if (userInfo.success) { store.setUser(userInfo.user); this.user = userInfo.user; }
     },
     methods: {
+        goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.hash = '#/';
+            }
+        },
+
         async loadOrders() {
             try {
                 const all = await api.get('/orders/my/' + this.user.id);
