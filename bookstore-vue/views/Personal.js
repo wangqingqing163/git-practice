@@ -1,7 +1,10 @@
 const Personal = {
     template: `
     <div class="container" v-if="user">
-        <div class="page-title">个人中心</div>
+        <div class="page-header">
+            <button class="btn-back" @click="goBack" title="返回上一页">◀ 返回</button>
+            <div class="page-title">个人中心</div>
+        </div>
 
         <!-- 个人主页卡片 -->
         <div class="my-profile-card" :style="getProfileCardBackgroundStyle()" v-if="userProfile">
@@ -124,6 +127,7 @@ const Personal = {
                             <template v-if="f.status == 1">
                                 <button class="action-btn btn-primary" @click="viewFavoriteDetail(f)">查看详情</button>
                                 <button class="action-btn btn-primary" @click="addToCartFromFavorite(f)">加购</button>
+                                <button class="action-btn btn-success" @click="buyDirectlyFromFavorite(f)">立即购买</button>
                                 <button class="action-btn btn-danger" @click="removeFavorite(f.id, f.bookId)">取消收藏</button>
                             </template>
                             <template v-else>
@@ -343,6 +347,14 @@ const Personal = {
         await Promise.all([this.loadMyBooks(), this.loadCart(), this.loadFavorites(), this.loadUserProfile()]);
     },
     methods: {
+        goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.hash = '#/';
+            }
+        },
+
         async loadUserProfile() {
             try {
                 const data = await api.get('/user/seller/' + this.user.id);
@@ -469,6 +481,44 @@ const Personal = {
             }
             this.selectedIds = [];
             this.batchBuyNow();
+        },
+        
+        // 从收藏列表直接购买（不经过购物车）
+        async buyDirectlyFromFavorite(f) {
+            if (f.status !== 1) {
+                alert('抱歉，这本书已经售出了或已下架！');
+                return;
+            }
+            
+            try {
+                // 先将这本书加入购物车
+                const cartData = await api.post('/cart/add', { 
+                    userId: this.user.id, 
+                    secondBookId: f.bookId 
+                });
+                
+                if (cartData.code === 200) {
+                    this.showToast('已自动加入购物车', 'success');
+                    
+                    // 刷新购物车数据以获取新添加的商品ID
+                    await this.loadCart();
+                    
+                    // 找到刚添加的购物车项（最后一个添加的）
+                    const newCartItem = this.cartItems.find(c => c.bookId === f.bookId);
+                    if (newCartItem) {
+                        // 选中这个商品并打开购买窗口
+                        this.selectedIds = [newCartItem.id];
+                        this.batchBuyNow();
+                    } else {
+                        this.showToast('购买失败，请重试', 'error');
+                    }
+                } else {
+                    this.showToast(cartData.msg || '添加到购物车失败', 'error');
+                }
+            } catch (e) {
+                console.error('直接购买失败:', e);
+                this.showToast('网络错误，请重试', 'error');
+            }
         },
         async removeBook(id) {
             if (!confirm('确定下架？')) return;
@@ -736,7 +786,8 @@ const Personal = {
                 level: book.level,
                 categoryId: book.categoryId,
                 bookDesc: book.bookDesc,
-                image: book.image
+                image: book.image,
+                status: book.status
             };
             this.showEdit = true;
         },

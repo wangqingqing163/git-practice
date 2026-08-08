@@ -1,7 +1,10 @@
 const Admin = {
     template: `
 <div class="admin-container">
-    <h1>📊 管理员后台</h1>
+    <div class="page-header">
+        <button class="btn-back" @click="goBack" title="返回上一页">◀ 返回</button>
+        <h1>📊 管理员后台</h1>
+    </div>
 
     <!-- 统计卡片 -->
     <div class="stats-grid">
@@ -13,8 +16,16 @@ const Admin = {
 
     <!-- 标签切换 -->
     <div class="tabs">
-        <button v-for="tab in tabs" :key="tab.key" @click="currentTab=tab.key" :class="{active: currentTab===tab.key}">{{ tab.icon }} {{ tab.label }}</button>
-        <button class="btn-refresh" @click="loadAllData()">🔄 刷新</button>
+        <button v-for="tab in tabs" :key="tab.key" @click="currentTab=tab.key" :class="{active: currentTab===tab.key}" :disabled="loading">{{ tab.icon }} {{ tab.label }}</button>
+        <button class="btn-refresh" @click="refreshData()" :disabled="loading">
+            {{ loading ? '⏳ 刷新中...' : '🔄 刷新' }}
+        </button>
+    </div>
+
+    <!-- 加载状态提示 -->
+    <div v-if="loading" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>正在加载数据...</p>
     </div>
 
     <!-- 用户管理 -->
@@ -28,10 +39,11 @@ const Admin = {
                 <option value="1">管理员</option>
             </select>
             <button class="btn-add" @click="openUserModal()">➕ 添加</button>
+            <button v-if="selectedUsers.length > 0" class="btn-danger" @click="batchDeleteUsers">🗑️ 批量删除 ({{ selectedUsers.length }})</button>
         </div>
         <table v-if="filteredUsers.length">
-            <thead><tr><th @click="sort('users','id')">ID {{ sortIcon('users','id') }}</th><th @click="sort('users','username')">用户名 {{ sortIcon('users','username') }}</th><th>手机号</th><th @click="sort('users','role')">角色 {{ sortIcon('users','role') }}</th><th>操作</th></tr></thead>
-            <tbody><tr v-for="u in paginatedUsers" :key="u.id"><td>{{ u.id }}</td><td class="bold red">{{ u.username }}</td><td>{{ u.phone||'-' }}</td><td><span :class="'role-'+u.role">{{ u.role==1?'管理员':'用户' }}</span></td><td class="actions"><button @click="editUser(u)">✏️</button><button @click="deleteUser(u.id)">🗑️</button></td></tr></tbody>
+            <thead><tr><th style="width:40px"><input type="checkbox" v-model="selectAllUsers" @change="toggleSelectAllUsers"></th><th @click="sort('users','id')">ID {{ sortIcon('users','id') }}</th><th @click="sort('users','username')">用户名 {{ sortIcon('users','username') }}</th><th>手机号</th><th @click="sort('users','role')">角色 {{ sortIcon('users','role') }}</th><th>操作</th></tr></thead>
+            <tbody><tr v-for="u in paginatedUsers" :key="u.id" :class="{ 'selected-row': selectedUsers.includes(u.id) }"><td><input type="checkbox" :value="u.id" v-model="selectedUsers"></td><td>{{ u.id }}</td><td class="bold red">{{ u.username }}</td><td>{{ u.phone||'-' }}</td><td><span :class="'role-'+u.role">{{ u.role==1?'管理员':'用户' }}</span></td><td class="actions"><button @click="editUser(u)">✏️</button><button @click="deleteUser(u.id)">🗑️</button></td></tr></tbody>
         </table>
         <div v-else class="empty">👥 暂无数据</div>
         <pagination :page="userPage" :total="filteredUsers.length" @change="userPage=$event" />
@@ -45,10 +57,11 @@ const Admin = {
             <select v-model="bookLevelFilter" @change="bookPage=1"><option value="">全部成色</option><option value="全新">全新</option><option value="几乎全新">几乎全新</option><option value="轻微使用痕迹">轻微使用痕迹</option><option value="明显使用痕迹">明显使用痕迹</option></select>
             <select v-model="bookPriceFilter" @change="bookPage=1"><option value="">全部价格</option><option value="0-50">¥50以下</option><option value="50-100">¥50-100</option><option value="100+">¥100以上</option></select>
             <button class="btn-add" @click="openBookModal()">➕ 添加</button>
+            <button v-if="selectedBooks.length > 0" class="btn-danger" @click="batchDeleteBooks">🗑️ 批量删除 ({{ selectedBooks.length }})</button>
         </div>
         <table v-if="filteredBooks.length">
-            <thead><tr><th @click="sort('books','id')">ID {{ sortIcon('books','id') }}</th><th @click="sort('books','name')">书名 {{ sortIcon('books','name') }}</th><th>作者</th><th @click="sort('books','price')">价格 {{ sortIcon('books','price') }}</th><th>成色</th><th>操作</th></tr></thead>
-            <tbody><tr v-for="b in paginatedBooks" :key="b.id"><td>{{ b.id }}</td><td class="bold blue">{{ b.name }}</td><td>{{ b.author||'-' }}</td><td class="green bold">¥{{ Number(b.price||0).toFixed(2) }}</td><td><span class="level">{{ b.level||'-' }}</span></td><td class="actions"><button @click="editBook(b)">✏️</button><button @click="deleteBook(b.id)">🗑️</button></td></tr></tbody>
+            <thead><tr><th style="width:40px"><input type="checkbox" v-model="selectAllBooks" @change="toggleSelectAllBooks"></th><th @click="sort('books','id')">ID {{ sortIcon('books','id') }}</th><th @click="sort('books','name')">书名 {{ sortIcon('books','name') }}</th><th>作者</th><th @click="sort('books','price')">价格 {{ sortIcon('books','price') }}</th><th>成色</th><th>操作</th></tr></thead>
+            <tbody><tr v-for="b in paginatedBooks" :key="b.id" :class="{ 'selected-row': selectedBooks.includes(b.id) }"><td><input type="checkbox" :value="b.id" v-model="selectedBooks"></td><td>{{ b.id }}</td><td class="bold blue">{{ b.name }}</td><td>{{ b.author||'-' }}</td><td class="green bold">¥{{ Number(b.price||0).toFixed(2) }}</td><td><span class="level">{{ b.level||'-' }}</span></td><td class="actions"><button @click="editBook(b)">✏️</button><button @click="deleteBook(b.id)">🗑️</button></td></tr></tbody>
         </table>
         <div v-else class="empty">📚 暂无数据</div>
         <pagination :page="bookPage" :total="filteredBooks.length" @change="bookPage=$event" />
@@ -61,10 +74,11 @@ const Admin = {
             <input v-model="orderSearch" placeholder="🔍 搜索订单号" @input="orderPage=1" />
             <select v-model="orderStatusFilter" @change="orderPage=1"><option value="">全部状态</option><option value="pending">待发货</option><option value="shipped">已发货</option><option value="received">已收货</option><option value="cancelled">已取消</option></select>
             <select v-model="orderPriceFilter" @change="orderPage=1"><option value="">全部金额</option><option value="0-100">¥100以下</option><option value="100-500">¥100-500</option><option value="500+">¥500以上</option></select>
+            <button v-if="selectedOrders.length > 0" class="btn-danger" @click="batchDeleteOrders">🗑️ 批量删除 ({{ selectedOrders.length }})</button>
         </div>
         <table v-if="filteredOrders.length">
-            <thead><tr><th>ID</th><th>订单号</th><th>买家ID</th><th>卖家ID</th><th @click="sort('orders','totalPrice')">金额 {{ sortIcon('orders','totalPrice') }}</th><th @click="sort('orders','status')">状态 {{ sortIcon('orders','status') }}</th><th>操作</th></tr></thead>
-            <tbody><tr v-for="o in paginatedOrders" :key="o.id"><td>{{ o.id }}</td><td class="mono">{{ o.orderNo||'-' }}</td><td>{{ o.buyerId||'-' }}</td><td>{{ o.sellerId||'-' }}</td><td class="green bold">¥{{ Number(o.totalPrice||0).toFixed(2) }}</td><td><span :class="'status-'+o.status">{{ statusText(o.status) }}</span></td><td class="actions"><button v-if="o.status==='pending'||o.status==='shipped'" @click="updateOrder(o.id,'cancelled')">❌</button><button @click="deleteOrder(o.id)">🗑️</button></td></tr></tbody>
+            <thead><tr><th style="width:40px"><input type="checkbox" v-model="selectAllOrders" @change="toggleSelectAllOrders"></th><th>ID</th><th>订单号</th><th>买家ID</th><th>卖家ID</th><th @click="sort('orders','totalPrice')">金额 {{ sortIcon('orders','totalPrice') }}</th><th @click="sort('orders','status')">状态 {{ sortIcon('orders','status') }}</th><th>操作</th></tr></thead>
+            <tbody><tr v-for="o in paginatedOrders" :key="o.id" :class="{ 'selected-row': selectedOrders.includes(o.id) }"><td><input type="checkbox" :value="o.id" v-model="selectedOrders"></td><td>{{ o.id }}</td><td class="mono">{{ o.orderNo||'-' }}</td><td>{{ o.buyerId||'-' }}</td><td>{{ o.sellerId||'-' }}</td><td class="green bold">¥{{ Number(o.totalPrice||0).toFixed(2) }}</td><td><span :class="'status-'+o.status">{{ statusText(o.status) }}</span></td><td class="actions"><button v-if="o.status==='pending'||o.status==='shipped'" @click="updateOrder(o.id,'cancelled')">❌</button><button @click="deleteOrder(o.id)">🗑️</button></td></tr></tbody>
         </table>
         <div v-else class="empty">📭 暂无数据</div>
         <pagination :page="orderPage" :total="filteredOrders.length" @change="orderPage=$event" />
@@ -76,10 +90,11 @@ const Admin = {
         <div class="toolbar">
             <input v-model="commentSearch" placeholder="🔍 搜索评论内容" @input="commentPage=1" />
             <select v-model="commentScoreFilter" @change="commentPage=1"><option value="">全部评分</option><option value="5">⭐⭐⭐⭐⭐</option><option value="4">⭐⭐⭐⭐</option><option value="3">⭐⭐⭐</option><option value="2">⭐⭐</option><option value="1">⭐</option></select>
+            <button v-if="selectedComments.length > 0" class="btn-danger" @click="batchDeleteComments">🗑️ 批量删除 ({{ selectedComments.length }})</button>
         </div>
         <table v-if="filteredComments.length">
-            <thead><tr><th>ID</th><th>用户ID</th><th>图书ID</th><th @click="sort('comments','score')">评分 {{ sortIcon('comments','score') }}</th><th>内容</th><th>操作</th></tr></thead>
-            <tbody><tr v-for="c in paginatedComments" :key="c.id"><td>{{ c.id }}</td><td>{{ c.userId||'-' }}</td><td>{{ c.bookId||'-' }}</td><td class="stars">{{ '★'.repeat(c.score||0) }}{{ '☆'.repeat(5-(c.score||0)) }}</td><td class="max-w">{{ c.content||'-' }}</td><td class="actions"><button @click="deleteComment(c.id)">🗑️</button></td></tr></tbody>
+            <thead><tr><th style="width:40px"><input type="checkbox" v-model="selectAllComments" @change="toggleSelectAllComments"></th><th>ID</th><th>用户ID</th><th>图书ID</th><th @click="sort('comments','score')">评分 {{ sortIcon('comments','score') }}</th><th>内容</th><th>操作</th></tr></thead>
+            <tbody><tr v-for="c in paginatedComments" :key="c.id" :class="{ 'selected-row': selectedComments.includes(c.id) }"><td><input type="checkbox" :value="c.id" v-model="selectedComments"></td><td>{{ c.id }}</td><td>{{ c.userId||'-' }}</td><td>{{ c.bookId||'-' }}</td><td class="stars">{{ '★'.repeat(c.score||0) }}{{ '☆'.repeat(5-(c.score||0)) }}</td><td class="max-w">{{ c.content||'-' }}</td><td class="actions"><button @click="deleteComment(c.id)">🗑️</button></td></tr></tbody>
         </table>
         <div v-else class="empty">💬 暂无数据</div>
         <pagination :page="commentPage" :total="filteredComments.length" @change="commentPage=$event" />
@@ -128,7 +143,12 @@ data() {
         sortState: { users:{key:'id',order:-1}, books:{key:'id',order:-1}, orders:{key:'id',order:-1}, comments:{key:'id',order:-1} },
         showUserModal: false, showBookModal: false, editMode: false,
         currentUser: { username:'', password:'', phone:'', role:0 },
-        currentBook: { name:'', author:'', price:0, level:'', description:'', sellerId:'' }
+        currentBook: { name:'', author:'', price:0, level:'', description:'', sellerId:'' },
+        // 批量选择相关数据
+        selectedUsers: [], selectAllUsers: false,
+        selectedBooks: [], selectAllBooks: false,
+        selectedOrders: [], selectAllOrders: false,
+        selectedComments: [], selectAllComments: false
     };
 },
 
@@ -146,18 +166,94 @@ computed: {
 mounted() { this.loadAllData(); },
 
 methods: {
+    goBack() {
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.hash = '#/';
+        }
+    },
+
+    async refreshData() {
+        console.log('🔄 管理员点击刷新按钮');
+        
+        if (this.loading) {
+            console.log('⏳ 正在加载中，忽略重复点击');
+            return;
+        }
+
+        await this.loadAllData();
+        
+        // 显示刷新成功提示
+        this.showToast('✅ 数据已刷新', 'success');
+    },
+
+    showToast(message, type = 'info') {
+        // 创建临时提示元素
+        const toast = document.createElement('div');
+        toast.className = `admin-toast admin-toast-${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        // 2秒后自动消失
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            setTimeout(() => document.body.removeChild(toast), 300);
+        }, 2000);
+    },
+
     async loadAllData() {
         this.loading = true;
+        console.log('📊 开始加载管理员数据...');
+
         try {
-            [this.userList, this.bookList, this.orderList, this.commentList] = await Promise.all([
-                api.get('/admin/users').catch(() => []),
-                api.get('/admin/books').catch(() => []),
-                api.get('/admin/orders').catch(() => []),
-                api.get('/admin/comments').catch(() => [])
+            const results = await Promise.allSettled([
+                api.get('/admin/users'),
+                api.get('/admin/books'),
+                api.get('/admin/orders'),
+                api.get('/admin/comments')
             ]);
+
+            // 处理每个结果
+            this.userList = results[0].status === 'fulfilled' ? results[0].value : [];
+            this.bookList = results[1].status === 'fulfilled' ? results[1].value : [];
+            this.orderList = results[2].status === 'fulfilled' ? results[2].value : [];
+            this.commentList = results[3].status === 'fulfilled' ? results[3].value : [];
+
+            // 过滤在售图书
             this.bookList = this.bookList.filter(b => String(b.status) === '1');
-        } catch(e) { console.error('Load error:', e); }
-        finally { this.loading = false; }
+
+            // 记录加载结果
+            console.log(`✅ 数据加载完成:`, {
+                users: this.userList.length,
+                books: this.bookList.length,
+                orders: this.orderList.length,
+                comments: this.commentList.length
+            });
+
+            // 检查是否有失败
+            const failures = results.filter(r => r.status === 'rejected');
+            if (failures.length > 0) {
+                console.warn(`⚠️ ${failures.length} 个API请求失败:`, failures.map(f => f.reason?.message));
+            }
+
+        } catch (e) {
+            console.error('❌ 加载管理员数据失败:', e);
+            
+            // 检查是否是认证错误
+            if (e.message?.includes('登录') || e.message?.includes('401')) {
+                this.showToast('⚠️ 登录已过期，请重新登录', 'error');
+                // 延迟一下让用户看到提示
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+                return;
+            }
+
+            this.showToast('❌ 数据加载失败: ' + e.message, 'error');
+        } finally {
+            this.loading = false;
+        }
     },
 
     filterData(list, search, searchFields, filters = {}) {
@@ -248,6 +344,196 @@ methods: {
     async deleteOrder(id) { if(!confirm('确定删除？')) return; try { await api.del(`/admin/order/${id}`); await this.loadAllData(); } catch(e) { alert(e.message); } },
 
     // 评论操作
-    async deleteComment(id) { if(!confirm('确定删除？')) return; try { await api.del(`/admin/comment/${id}`); await this.loadAllData(); } catch(e) { alert(e.message); } }
+    async deleteComment(id) { if(!confirm('确定删除？')) return; try { await api.del(`/admin/comment/${id}`); await this.loadAllData(); } catch(e) { alert(e.message); } },
+
+    // ==================== 批量操作方法 ====================
+    
+    // 用户批量操作
+    toggleSelectAllUsers() {
+        if (this.selectAllUsers) {
+            this.selectedUsers = this.filteredUsers.map(u => u.id);
+        } else {
+            this.selectedUsers = [];
+        }
+    },
+    
+    async batchDeleteUsers() {
+        if (this.selectedUsers.length === 0) {
+            this.showToast('请先选择要删除的用户', 'warning');
+            return;
+        }
+        
+        if (!confirm(`确定要批量删除选中的 ${this.selectedUsers.length} 个用户吗？\n\n此操作不可恢复！`)) {
+            return;
+        }
+        
+        let successCount = 0;
+        let failCount = 0;
+        
+        for (const userId of this.selectedUsers) {
+            try {
+                await api.del(`/admin/user/${userId}`);
+                successCount++;
+            } catch (e) {
+                failCount++;
+                console.error(`❌ 用户 ${userId} 删除失败:`, e.message);
+            }
+        }
+        
+        // 清空选择
+        this.selectedUsers = [];
+        this.selectAllUsers = false;
+        
+        // 刷新数据
+        await this.loadAllData();
+        
+        // 显示结果
+        if (failCount === 0) {
+            this.showToast(`✅ 成功删除 ${successCount} 个用户`, 'success');
+        } else {
+            this.showToast(`⚠️ 成功: ${successCount} 个, 失败: ${failCount} 个`, 'warning');
+        }
+    },
+    
+    // 图书批量操作
+    toggleSelectAllBooks() {
+        if (this.selectAllBooks) {
+            this.selectedBooks = this.filteredBooks.map(b => b.id);
+        } else {
+            this.selectedBooks = [];
+        }
+    },
+    
+    async batchDeleteBooks() {
+        if (this.selectedBooks.length === 0) {
+            this.showToast('请先选择要删除的图书', 'warning');
+            return;
+        }
+        
+        if (!confirm(`确定要批量删除选中的 ${this.selectedBooks.length} 本图书吗？\n\n此操作不可恢复！`)) {
+            return;
+        }
+        
+        let successCount = 0;
+        let failCount = 0;
+        
+        for (const bookId of this.selectedBooks) {
+            try {
+                await api.del(`/admin/book/${bookId}`);
+                successCount++;
+            } catch (e) {
+                failCount++;
+                console.error(`❌ 图书 ${bookId} 删除失败:`, e.message);
+            }
+        }
+        
+        // 清空选择
+        this.selectedBooks = [];
+        this.selectAllBooks = false;
+        
+        // 刷新数据
+        await this.loadAllData();
+        
+        // 显示结果
+        if (failCount === 0) {
+            this.showToast(`✅ 成功删除 ${successCount} 本图书`, 'success');
+        } else {
+            this.showToast(`⚠️ 成功: ${successCount} 本, 失败: ${failCount} 本`, 'warning');
+        }
+    },
+    
+    // 订单批量操作
+    toggleSelectAllOrders() {
+        if (this.selectAllOrders) {
+            this.selectedOrders = this.filteredOrders.map(o => o.id);
+        } else {
+            this.selectedOrders = [];
+        }
+    },
+    
+    async batchDeleteOrders() {
+        if (this.selectedOrders.length === 0) {
+            this.showToast('请先选择要删除的订单', 'warning');
+            return;
+        }
+        
+        if (!confirm(`确定要批量删除选中的 ${this.selectedOrders.length} 个订单吗？\n\n此操作不可恢复！`)) {
+            return;
+        }
+        
+        let successCount = 0;
+        let failCount = 0;
+        
+        for (const orderId of this.selectedOrders) {
+            try {
+                await api.del(`/admin/order/${orderId}`);
+                successCount++;
+            } catch (e) {
+                failCount++;
+                console.error(`❌ 订单 ${orderId} 删除失败:`, e.message);
+            }
+        }
+        
+        // 清空选择
+        this.selectedOrders = [];
+        this.selectAllOrders = false;
+        
+        // 刷新数据
+        await this.loadAllData();
+        
+        // 显示结果
+        if (failCount === 0) {
+            this.showToast(`✅ 成功删除 ${successCount} 个订单`, 'success');
+        } else {
+            this.showToast(`⚠️ 成功: ${successCount} 个, 失败: ${failCount} 个`, 'warning');
+        }
+    },
+    
+    // 评论批量操作
+    toggleSelectAllComments() {
+        if (this.selectAllComments) {
+            this.selectedComments = this.filteredComments.map(c => c.id);
+        } else {
+            this.selectedComments = [];
+        }
+    },
+    
+    async batchDeleteComments() {
+        if (this.selectedComments.length === 0) {
+            this.showToast('请先选择要删除的评论', 'warning');
+            return;
+        }
+        
+        if (!confirm(`确定要批量删除选中的 ${this.selectedComments.length} 条评论吗？\n\n此操作不可恢复！`)) {
+            return;
+        }
+        
+        let successCount = 0;
+        let failCount = 0;
+        
+        for (const commentId of this.selectedComments) {
+            try {
+                await api.del(`/admin/comment/${commentId}`);
+                successCount++;
+            } catch (e) {
+                failCount++;
+                console.error(`❌ 评论 ${commentId} 删除失败:`, e.message);
+            }
+        }
+        
+        // 清空选择
+        this.selectedComments = [];
+        this.selectAllComments = false;
+        
+        // 刷新数据
+        await this.loadAllData();
+        
+        // 显示结果
+        if (failCount === 0) {
+            this.showToast(`✅ 成功删除 ${successCount} 条评论`, 'success');
+        } else {
+            this.showToast(`⚠️ 成功: ${successCount} 条, 失败: ${failCount} 条`, 'warning');
+        }
+    }
 }
 };

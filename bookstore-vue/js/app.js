@@ -35,8 +35,6 @@ const app = Vue.createApp({
         }
     },
     mounted() {
-        const self = this;
-
         // 页面加载时检查Token有效性
         if (store.isLoggedIn()) {
             if (!store.checkAndRefreshAuth()) {
@@ -47,16 +45,21 @@ const app = Vue.createApp({
         }
 
         router.beforeEach((to, from, next) => {
+            // 仅在用户状态实际变化时更新，避免不必要的重渲染
             const user = store.getUser();
-            self.currentUser = user;
-            self.isAdmin = store.isAdmin();
+            const isAdmin = store.isAdmin();
+            
+            if (this.currentUser?.id !== user?.id || this.isAdmin !== isAdmin) {
+                this.currentUser = user;
+                this.isAdmin = isAdmin;
+            }
 
             // 管理员页面需要管理员权限和有效Token
-            if (to.path === '/admin' && !self.isAdmin) {
-                self.showToast('无管理员权限或未登录', 'error');
+            if (to.path === '/admin' && !isAdmin) {
+                this.showToast('无管理员权限或未登录', 'error');
                 
                 if (!store.getToken()) {
-                    self.showLoginModal = true;
+                    this.showLoginModal = true;
                 }
                 
                 next('/');
@@ -65,7 +68,7 @@ const app = Vue.createApp({
 
             // 个人中心和订单页面需要登录
             if ((to.path === '/personal' || to.path === '/orders') && !store.isLoggedIn()) {
-                self.showLoginModal = true;
+                this.showLoginModal = true;
                 next('/');
                 return;
             }
