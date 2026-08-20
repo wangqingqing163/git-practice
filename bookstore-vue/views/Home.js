@@ -305,8 +305,8 @@
                         <div style="color:var(--primary);font-size:28px;font-weight:800;margin:12px 0">¥{{ (detailBook.price||0).toFixed(2) }}</div>
                         <div style="background:var(--primary-light);padding:12px;border-radius:4px;margin:12px 0;line-height:1.6;font-size:13px;color:var(--text-secondary);border:1px solid #ffd4d4">{{ detailBook.bookDesc || '暂无描述' }}</div>
                         <div class="form-actions" style="margin-top:8px">
-                            <button class="btn-cancel" @click="addToCart(detailBook.id)">加入购物车</button>
-                            <button class="btn-submit" @click="showDetail=null;buyNow(detailBook)">立即购买</button>
+                            <button class="btn-cancel" @click="addToCart(detailBook.id)">+ 加购</button>
+                            <button class="btn-submit" @click="showDetail=null;buyNow(detailBook)">⚡ 下单</button>
                         </div>
                     </div>
                 </div>
@@ -562,7 +562,17 @@
             this.showToast('已显示30元以下特价图书', 'success');
         },
         async loadCategories() {
-            try { this.categories = await api.getCategory(); } catch (e) { console.error(e); }
+            try {
+                const data = await api.getCategory();
+                console.log('📂 分类数据:', data);
+                this.categories = Array.isArray(data) ? data : [];
+                if (this.categories.length === 0) {
+                    console.warn('⚠️ 分类列表为空');
+                }
+            } catch (e) {
+                console.error('❌ 加载分类失败:', e);
+                this.categories = [];
+            }
         },
         async loadBooks() {
             this.loading = true;
@@ -759,9 +769,14 @@
             let dynamicSlides = [];
             let usedCategoryIds = new Set();
 
+            if (!Array.isArray(this.categories)) {
+                console.warn('categories is not an array:', this.categories);
+                this.categories = [];
+            }
+
             for (let theme of categoryThemes) {
                 const matchedCategory = this.categories.find(cat =>
-                    theme.keywords.some(keyword => cat.name.includes(keyword))
+                    cat.name && theme.keywords.some(keyword => cat.name.includes(keyword))
                 );
 
                 if (matchedCategory && !usedCategoryIds.has(matchedCategory.id)) {
@@ -846,6 +861,10 @@
             return { background: colors[idx].bg, color: colors[idx].color };
         },
         getCategoryIcon(categoryName) {
+            if (!categoryName || typeof categoryName !== 'string') {
+                return '📚';
+            }
+            
             const iconMap = {
                 '计算机': '💻', '编程': '💻', '软件': '💻', '互联网': '💻', '技术': '⚙️',
                 '文学': '📖', '小说': '📚', '散文': '✍️', '诗歌': '🎭', '名著': '📜',

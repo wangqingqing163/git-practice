@@ -18,14 +18,14 @@ const Personal = {
                 </div>
 
                 <div class="profile-info-wrapper">
-                    <h2 class="profile-username">{{ user.username }}</h2>
-                    <div class="profile-meta-info">
+                    <h2 class="profile-username" style="color: #000000 !important;">{{ user.username }}</h2>
+                    <div class="profile-meta-info" style="color: #000000 !important;">
                         <span>📅 注册时间: {{ formatTime(userProfile.createTime) }}</span>
                         <span>📍 {{ userProfile.ip || '未知' }}</span>
                     </div>
 
                     <div class="profile-tags-display" v-if="parsedTags.length > 0">
-                        <span class="profile-tag-item" v-for="(tag, idx) in parsedTags" :key="idx">{{ tag }}</span>
+                        <span class="profile-tag-item" style="color: #000000 !important;" v-for="(tag, idx) in parsedTags" :key="idx">{{ tag }}</span>
                     </div>
                     <div class="profile-tags-display" v-else>
                         <span class="profile-tag-item tag-empty">暂无标签，点击编辑添加</span>
@@ -37,7 +37,7 @@ const Personal = {
                 </button>
             </div>
 
-            <div class="profile-stats-row">
+            <div class="profile-stats-row" :style="{ color: getTextColor() }">
                 <div class="profile-stat-item">
                     <div class="profile-stat-num">{{ myBooks.filter(b => b.status === '1').length }}</div>
                     <div class="profile-stat-label">在售图书</div>
@@ -54,8 +54,91 @@ const Personal = {
         </div>
 
         <div class="stats-row">
-            <div class="stat-card"><div class="stat-icon">P</div><div><div class="stat-num">{{ myBooks.length }}</div><div class="stat-label">我发布的</div></div></div>
-            <div class="stat-card"><div class="stat-icon">C</div><div><div class="stat-num">{{ cartItems.length }}</div><div class="stat-label">购物车</div></div></div>
+            <div class="stat-card stat-dropdown-trigger" @click="toggleMyBooksDropdown" :class="{ 'active': showMyBooksDropdown }">
+                <div class="stat-icon">P</div>
+                <div><div class="stat-num">{{ myBooks.length }}</div><div class="stat-label">我发布的</div></div>
+                <span class="dropdown-arrow">▼</span>
+
+                <!-- 下拉弹出层 - 我的发布 -->
+                <transition name="dropdown-fade">
+                    <div v-if="showMyBooksDropdown" class="stat-dropdown-menu my-books-dropdown" @click.stop>
+                        <div class="dropdown-header">
+                            <h4>📚 我的发布 ({{ myBooks.length }}本)</h4>
+                            <button class="dropdown-close" @click.stop="showMyBooksDropdown=false">✕</button>
+                        </div>
+
+                        <div class="dropdown-content" v-if="myBooks.length > 0">
+                            <table class="dropdown-table">
+                                <thead><tr><th>书名</th><th>价格</th><th>状态</th><th>操作</th></tr></thead>
+                                <tbody>
+                                    <tr v-for="b in myBooks.slice(0, 5)" :key="b.id">
+                                        <td class="book-name-cell">{{ b.name }}</td>
+                                        <td>¥{{ (b.price||0).toFixed(2) }}</td>
+                                        <td><span class="mini-status" :class="b.status==='1'?'status-on':'status-off'">{{ b.status==='1'?'在售':'已售' }}</span></td>
+                                        <td><button class="mini-btn btn-edit-mini" @click.stop="editBook(b); showMyBooksDropdown=false">编辑</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div v-if="myBooks.length > 5" class="view-more-hint">还有 {{ myBooks.length - 5 }} 本...</div>
+                        </div>
+
+                        <div class="dropdown-empty" v-else>
+                            <p>暂无发布</p>
+                            <button class="mini-btn btn-primary-mini" @click.stop="showMyBooksDropdown=false; showPublish=true">立即发布</button>
+                        </div>
+
+                        <div class="dropdown-footer">
+                            <button class="btn-view-all" @click.stop="scrollToSection('my-books-section'); showMyBooksDropdown=false">查看全部 →</button>
+                        </div>
+                    </div>
+                </transition>
+            </div>
+
+            <div class="stat-card stat-dropdown-trigger" @click="toggleCartDropdown" :class="{ 'active': showCartDropdown }">
+                <div class="stat-icon">C</div>
+                <div><div class="stat-num">{{ cartItems.length }}</div><div class="stat-label">购物车</div></div>
+                <span class="dropdown-arrow">▼</span>
+
+                <!-- 下拉弹出层 - 购物车 -->
+                <transition name="dropdown-fade">
+                    <div v-if="showCartDropdown" class="stat-dropdown-menu cart-dropdown" @click.stop>
+                        <div class="dropdown-header">
+                            <h4>🛒 购物车 ({{ cartItems.length }}件)</h4>
+                            <button class="dropdown-close" @click.stop="showCartDropdown=false">✕</button>
+                        </div>
+
+                        <div class="dropdown-content" v-if="cartItems.length > 0">
+                            <table class="dropdown-table">
+                                <thead><tr><th>书名</th><th>数量</th><th>小计</th><th>操作</th></tr></thead>
+                                <tbody>
+                                    <tr v-for="c in cartItems.slice(0, 5)" :key="c.id">
+                                        <td class="book-name-cell">{{ c.bookName || '图书#'+c.bookId }}</td>
+                                        <td>{{ c.quantity || 1 }}</td>
+                                        <td class="price-text">¥{{ ((c.price||0)*(c.quantity||1)).toFixed(2) }}</td>
+                                        <td><button class="mini-btn btn-danger-mini" @click.stop="removeCart(c.id)">删除</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="cart-total-row">
+                                <span>合计:</span>
+                                <strong class="total-price">¥{{ totalPrice.toFixed(2) }}</strong>
+                            </div>
+                            <div v-if="cartItems.length > 5" class="view-more-hint">还有 {{ cartItems.length - 5 }} 件...</div>
+                        </div>
+
+                        <div class="dropdown-empty" v-else>
+                            <p>购物车空空如也</p>
+                            <button class="mini-btn btn-primary-mini" @click.stop="showCartDropdown=false; goBack()">去逛逛</button>
+                        </div>
+
+                        <div class="dropdown-footer">
+                            <button class="btn-checkout-now" @click.stop="showCartDropdown=false; showBatchBuy=true" v-if="cartItems.length > 0">
+                                💰 去结算
+                            </button>
+                        </div>
+                    </div>
+                </transition>
+            </div>
         </div>
 
         <div class="publish-banner" @click="showPublish=true">
@@ -67,7 +150,7 @@ const Personal = {
             <div class="publish-banner-arrow">+</div>
         </div>
 
-        <div class="section-card">
+        <div class="section-card" id="my-books-section">
             <div class="section-header">
                 <h3>我发布的二手书</h3>
                 <span class="count-badge">{{ myBooks.length }} 本</span>
@@ -151,9 +234,9 @@ const Personal = {
                         <td>{{ c.bookName || '图书#'+c.bookId }}</td>
                         <td>¥{{ (c.price||0).toFixed(2) }}</td>
                         <td>
-                            <input type="number" v-model.number="c.num" min="1" style="width:50px;padding:4px 8px;border:1px solid var(--border);border-radius:4px" @change="updateCartNum(c)">
+                            <input type="number" v-model.number="c.quantity" min="1" style="width:50px;padding:4px 8px;border:1px solid var(--border);border-radius:4px" @change="updateCartNum(c)">
                         </td>
-                        <td style="color:var(--primary);font-weight:600">¥{{ ((c.price||0) * (c.num||1)).toFixed(2) }}</td>
+                        <td style="color:var(--primary);font-weight:600">¥{{ ((c.price||0) * (c.quantity||1)).toFixed(2) }}</td>
                         <td>
                             <button class="action-btn btn-danger" @click="removeCart(c.id)">删除</button>
                             <button class="action-btn btn-primary" @click="buySingle(c)">购买</button>
@@ -177,7 +260,7 @@ const Personal = {
                 <h2>🛒 批量下单确认</h2>
                 <div class="batch-books-list">
                     <div v-for="id in selectedIds" :key="id" class="batch-book-item">
-                        {{ getBookById(id).bookName || '图书' }} × {{ getBookById(id).num || 1 }}本 = ¥{{ ((getBookById(id).price||0) * (getBookById(id).num||1)).toFixed(2) }}
+                        {{ getBookById(id).bookName || '图书' }} × {{ getBookById(id).quantity || 1 }}本 = ¥{{ ((getBookById(id).price||0) * (getBookById(id).quantity||1)).toFixed(2) }}
                     </div>
                 </div>
                 <div class="batch-total" style="background:#fff5f5;padding:16px;border-radius:6px;margin:16px 0;text-align:right;border:2px solid var(--primary)">
@@ -314,6 +397,9 @@ const Personal = {
         return {
             user: store.getUser(), myBooks: [], cartItems: [], favorites: [], categories: [],
             showPublish: false, showEdit: false, showBatchBuy: false, batchBuying: false, showFavoriteDetail: false, favoriteDetailBook: null,
+            // 下拉弹出层状态
+            showMyBooksDropdown: false,
+            showCartDropdown: false,
             selectAll: false, selectedIds: [],
             selectedFavorites: [], selectAllFavorites: false,
             // 发布的图书批量操作
@@ -333,7 +419,7 @@ const Personal = {
         totalPrice() {
             return this.selectedIds.reduce((sum, id) => {
                 const item = this.cartItems.find(c => c.id === id);
-                return sum + (item ? (item.price || 0) * (item.num || 1) : 0);
+                return sum + (item ? (item.price || 0) * (item.quantity || 1) : 0);
             }, 0);
         },
         parsedTags() {
@@ -345,8 +431,37 @@ const Personal = {
         if (!this.user) return;
         this.categories = await api.getCategory().catch(() => []);
         await Promise.all([this.loadMyBooks(), this.loadCart(), this.loadFavorites(), this.loadUserProfile()]);
+
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', this.closeDropdowns);
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.closeDropdowns);
     },
     methods: {
+        // 获取当前文字颜色（供内联样式使用）
+        getTextColor() {
+            console.log('=== [getTextColor-DEBUG] 开始计算 ===');
+            console.log('- userProfile:', this.userProfile);
+            console.log('- textColorMode:', this.userProfile?.textColorMode);
+            console.log('- textColor:', this.userProfile?.textColor);
+
+            const mode = this.userProfile?.textColorMode || 'auto';
+            const bg = this.userProfile?.background || '';
+            let resultColor = '#000000';  // 默认黑色（临时改为黑色测试）
+
+            if (mode === 'auto') {
+                resultColor = this.calculateTextColor(bg);
+                console.log('- 自动模式, 结果:', resultColor);
+            } else if (this.userProfile?.textColor) {
+                resultColor = this.userProfile.textColor;
+                console.log('- 自定义颜色:', resultColor);
+            }
+
+            console.log('✅ [getTextColor-DEBUG] 最终返回颜色:', resultColor);
+            return resultColor;
+        },
+
         goBack() {
             if (window.history.length > 1) {
                 window.history.back();
@@ -355,36 +470,154 @@ const Personal = {
             }
         },
 
+        // 下拉弹出层控制
+        toggleMyBooksDropdown() {
+            this.showMyBooksDropdown = !this.showMyBooksDropdown;
+            if (this.showMyBooksDropdown) {
+                this.showCartDropdown = false; // 关闭另一个
+            }
+        },
+
+        toggleCartDropdown() {
+            this.showCartDropdown = !this.showCartDropdown;
+            if (this.showCartDropdown) {
+                this.showMyBooksDropdown = false; // 关闭另一个
+            }
+        },
+
+        closeDropdowns(event) {
+            // 检查点击是否在触发器外部
+            const isClickInsideMyBooks = event.target.closest('.stat-dropdown-trigger:nth-child(1)');
+            const isClickInsideCart = event.target.closest('.stat-dropdown-trigger:nth-child(2)');
+
+            if (!isClickInsideMyBooks && !isClickInsideCart) {
+                this.showMyBooksDropdown = false;
+                this.showCartDropdown = false;
+            }
+        },
+
+        scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        },
+
         async loadUserProfile() {
             try {
+                console.log('=== [个人中心-DEBUG] 开始加载用户信息 ===');
+                console.log('[个人中心-DEBUG] 用户ID:', this.user.id);
+
                 const data = await api.get('/user/seller/' + this.user.id);
+                console.log('=== [个人中心-DEBUG] 服务器返回的完整数据 ===');
+                console.log(JSON.stringify(data, null, 2));
+
                 if (data && data.seller) {
                     this.userProfile = data.seller;
-                    console.log('用户主页信息加载成功:', this.userProfile);
+
+                    console.log('=== [个人中心-DEBUG] 关键字段检查 ===');
+                    console.log('- userProfile.background:', this.userProfile?.background);
+                    console.log('- userProfile.textColor:', this.userProfile?.textColor);  // ← 关键！
+                    console.log('- userProfile.textColorMode:', this.userProfile?.textColorMode);  // ← 关键！
+                    console.log('✅ 用户主页信息加载成功');
+                } else {
+                    console.error('❌ [个人中心-DEBUG] 返回数据中没有 seller 对象');
                 }
             } catch (e) {
-                console.error('加载用户主页信息失败:', e);
+                console.error('❌ 加载用户主页信息失败:', e);
                 this.userProfile = null;
             }
         },
         
         getProfileCardBackgroundStyle() {
             const bg = this.userProfile?.background || '';
-            
+
+            let baseStyle = {};
+
             // 检查是否为URL（以http开头）
             if (bg.startsWith('http://') || bg.startsWith('https://')) {
-                return {
+                baseStyle = {
                     backgroundImage: `url(${bg})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat'
                 };
+            } else {
+                // 使用渐变色或纯色
+                baseStyle = {
+                    background: bg || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                };
             }
-            
-            // 使用渐变色或纯色
-            return {
-                background: bg || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-            };
+
+            // ===== 计算并应用文字颜色 =====
+            let textColor = '#ffffff';  // 默认白色
+
+            const mode = this.userProfile?.textColorMode || 'auto';
+
+            if (mode === 'auto') {
+                // 自动模式：根据背景亮度计算最佳文字颜色
+                textColor = this.calculateTextColor(bg);
+            } else if (this.userProfile?.textColor) {
+                // 使用用户设置的自定义颜色
+                textColor = this.userProfile.textColor;
+            }
+
+            // 应用文字颜色到样式
+            baseStyle.color = textColor;
+
+            console.log('🎨 [个人中心] 文字颜色模式:', mode, '| 最终颜色:', textColor);
+
+            return baseStyle;
+        },
+
+        // 智能文字颜色计算（与 SellerProfile 保持一致）
+        calculateTextColor(backgroundColor) {
+            if (!backgroundColor) {
+                return '#ffffff';
+            }
+
+            try {
+                let mainColor = backgroundColor;
+
+                // 如果是 URL，默认返回白色（适合大多数图片背景）
+                if (backgroundColor.startsWith('http') || backgroundColor.startsWith('data:image')) {
+                    return '#ffffff';
+                }
+
+                // 处理渐变色 - 提取第一个颜色
+                if (mainColor.includes('gradient')) {
+                    const colorMatch = mainColor.match(/#[0-9a-fA-F]{6}|rgb\([^)]+\)/);
+                    if (colorMatch) {
+                        mainColor = colorMatch[0];
+                    } else {
+                        return '#ffffff';
+                    }
+                }
+
+                // 解析十六进制颜色
+                let r = 0, g = 0, b = 0;
+                if (mainColor.startsWith('#')) {
+                    r = parseInt(mainColor.slice(1, 3), 16);
+                    g = parseInt(mainColor.slice(3, 5), 16);
+                    b = parseInt(mainColor.slice(5, 7), 16);
+                } else if (mainColor.startsWith('rgb')) {
+                    const rgbMatch = mainColor.match(/\d+/g);
+                    if (rgbMatch && rgbMatch.length >= 3) {
+                        r = parseInt(rgbMatch[0]);
+                        g = parseInt(rgbMatch[1]);
+                        b = parseInt(rgbMatch[2]);
+                    }
+                }
+
+                // 计算亮度 (ITU-R BT.709)
+                const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+
+                return luminance > 0.5 ? '#1a1a1a' : '#ffffff';
+
+            } catch (e) {
+                console.warn('计算文字颜色失败:', e);
+                return '#ffffff';
+            }
         },
         goToMyProfile() {
             this.$router.push('/seller/' + this.user.id);
@@ -585,7 +818,7 @@ const Personal = {
             }
         },
         async updateCartNum(c) {
-            try { await api.put('/cart/updateNum', { id: c.id, num: c.num }); } catch (e) {}
+            try { await api.put('/cart/updateNum', { id: c.id, num: c.quantity }); } catch (e) {}
         },
         async removeCart(id) {
             try { await api.del('/cart/' + id); this.showToast('已删除', 'success'); this.selectedIds = this.selectedIds.filter(i => i !== id); this.loadCart(); } catch (e) { this.showToast('删除失败', 'error'); }
@@ -728,7 +961,7 @@ const Personal = {
                     const data = await api.post('/orders/create', {
                         buyerId: this.user.id,
                         bookId: item.bookId,
-                        totalPrice: item.price * (item.num || 1),
+                        totalPrice: item.price * (item.quantity || 1),
                         receiverName: this.batchForm.receiverName,
                         address: fullAddress,
                         phone: this.batchForm.phone,

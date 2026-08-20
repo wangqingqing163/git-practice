@@ -9,15 +9,20 @@ const LoginModal = {
             </div>
             <div class="form-group">
                 <label>用户名</label>
-                <input v-model="username" placeholder="请输入用户名" @keyup.enter="submit">
+                <input v-model="username" placeholder="请输入用户名（4-20位，中文/字母开头）" @keyup.enter="submit" @blur="validateUsernameInput">
+                <div v-if="usernameError" class="field-error">{{ usernameError }}</div>
+                <div v-else-if="username && !usernameError" class="field-success">✓ 格式正确</div>
             </div>
             <div class="form-group">
                 <label>密码</label>
-                <input v-model="password" type="password" placeholder="请输入密码" @keyup.enter="submit">
+                <input v-model="password" type="password" placeholder="请输入密码（6-20位，必须包含字母和数字）" @keyup.enter="submit" @blur="validatePasswordInput">
+                <div v-if="passwordError" class="field-error">{{ passwordError }}</div>
+                <div v-else-if="password && !passwordError" class="field-success">✓ 格式正确</div>
             </div>
             <div class="form-group" v-if="!isLogin">
                 <label>手机号</label>
-                <input v-model="phone" placeholder="请输入手机号">
+                <input v-model="phone" placeholder="请输入手机号（选填）" @blur="validatePhoneInput">
+                <div v-if="phoneError" class="field-error">{{ phoneError }}</div>
             </div>
             <div class="form-group" v-if="!isLogin">
                 <label>收货地址</label>
@@ -31,9 +36,36 @@ const LoginModal = {
     </div>`,
     emits: ['close', 'login-success'],
     data() {
-        return { isLogin: true, username: '', password: '', phone: '', address: '' };
+        return { isLogin: true, username: '', password: '', phone: '', address: '', usernameError: '', passwordError: '', phoneError: '' };
     },
     methods: {
+        validateUsernameInput() {
+            if (!this.username) {
+                this.usernameError = '';
+                return;
+            }
+            const result = this.validateUsername(this.username);
+            this.usernameError = result.valid ? '' : result.message;
+        },
+
+        validatePasswordInput() {
+            if (!this.password) {
+                this.passwordError = '';
+                return;
+            }
+            const result = this.validatePassword(this.password);
+            this.passwordError = result.valid ? '' : result.message;
+        },
+
+        validatePhoneInput() {
+            if (!this.phone) {
+                this.phoneError = '';
+                return;
+            }
+            const result = this.validatePhone(this.phone);
+            this.phoneError = result.valid ? '' : result.message;
+        },
+
         async submit() {
             if (!this.username.trim()) { this.showToast('请输入用户名', 'error'); return; }
             if (!this.password.trim()) { this.showToast('请输入密码', 'error'); return; }
@@ -68,11 +100,85 @@ const LoginModal = {
             }
         },
 
+        validateUsername(username) {
+            if (!username || username.trim().length === 0) {
+                return { valid: false, message: '请输入用户名' };
+            }
+            
+            const trimmedUsername = username.trim();
+            
+            if (trimmedUsername.length < 4 || trimmedUsername.length > 20) {
+                return { valid: false, message: '用户名长度必须在4-20个字符之间' };
+            }
+            
+            const usernameRegex = /^[a-zA-Z\u4e00-\u9fa5][a-zA-Z0-9_\u4e00-\u9fa5]{3,19}$/;
+            if (!usernameRegex.test(trimmedUsername)) {
+                return { valid: false, message: '用户名只能包含中文、字母、数字和下划线，且必须以中文或字母开头' };
+            }
+            
+            return { valid: true, message: '' };
+        },
+
+        validatePassword(password) {
+            if (!password || password.length === 0) {
+                return { valid: false, message: '请输入密码' };
+            }
+            
+            if (password.length < 6 || password.length > 20) {
+                return { valid: false, message: '密码长度必须在6-20个字符之间' };
+            }
+            
+            const hasLetter = /[a-zA-Z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            
+            if (!hasLetter || !hasNumber) {
+                return { valid: false, message: '密码必须同时包含字母和数字' };
+            }
+            
+            const passwordRegex = /^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]{6,20}$/;
+            if (!passwordRegex.test(password)) {
+                return { valid: false, message: '密码只能包含字母、数字和常见符号' };
+            }
+            
+            return { valid: true, message: '' };
+        },
+
+        validatePhone(phone) {
+            if (!phone || phone.trim().length === 0) {
+                return { valid: true, message: '' };
+            }
+            
+            const phoneRegex = /^1[3-9]\d{9}$/;
+            if (!phoneRegex.test(phone.trim())) {
+                return { valid: false, message: '请输入正确的手机号格式' };
+            }
+            
+            return { valid: true, message: '' };
+        },
+
         async handleRegister() {
+            const usernameValidation = this.validateUsername(this.username);
+            if (!usernameValidation.valid) {
+                this.showToast(usernameValidation.message, 'error');
+                return;
+            }
+
+            const passwordValidation = this.validatePassword(this.password);
+            if (!passwordValidation.valid) {
+                this.showToast(passwordValidation.message, 'error');
+                return;
+            }
+
+            const phoneValidation = this.validatePhone(this.phone);
+            if (!phoneValidation.valid) {
+                this.showToast(phoneValidation.message, 'error');
+                return;
+            }
+
             const data = await api.register({
-                username: this.username,
+                username: this.username.trim(),
                 password: this.password,
-                phone: this.phone || '',
+                phone: this.phone.trim(),
                 address: this.address || ''
             });
 

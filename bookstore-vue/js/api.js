@@ -56,8 +56,19 @@ const api = {
     },
 
     async getCategory() {
-        try { return await (await fetch('/category/list')).json(); }
-        catch (e) { return []; }
+        try {
+            const response = await fetch(API_BASE + '/category/list');
+            if (!response.ok) {
+                console.warn('获取分类列表失败:', response.status);
+                return [];
+            }
+            const data = await response.json();
+            console.log('✅ 分类列表加载成功:', data.length, '个分类');
+            return Array.isArray(data) ? data : [];
+        } catch (e) {
+            console.error('获取分类列表异常:', e);
+            return [];
+        }
     },
 
     // 收藏相关

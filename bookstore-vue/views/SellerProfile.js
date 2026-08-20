@@ -231,6 +231,84 @@ const SellerProfile = {
                     </div>
                     <div class="form-hint" v-if="!backgroundImageUrl">或自定义CSS渐变/颜色：</div>
                     <input v-if="!backgroundImageUrl" v-model="editForm.background" placeholder="linear-gradient(135deg, #667eea, #764ba2) 或 #ff0000" class="text-input">
+
+                    <!-- ===== 新增：文字颜色设置 ===== -->
+                    <div class="theme-color-section" style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+                        <label class="edit-label">✏️ 文字与主题颜色</label>
+                        
+                        <!-- 智能模式切换 -->
+                        <div class="theme-mode-toggle">
+                            <button 
+                                class="mode-btn" 
+                                :class="{ active: textColorMode === 'auto' }"
+                                @click="textColorMode = 'auto'"
+                                title="根据背景亮度自动选择最佳文字颜色">
+                                🤖 自动适配
+                            </button>
+                            <button 
+                                class="mode-btn" 
+                                :class="{ active: textColorMode === 'light' }"
+                                @click="textColorMode = 'light'; editForm.textColor = '#ffffff'"
+                                title="使用浅色文字（适合深色背景）">
+                                ☀️ 浅色文字
+                            </button>
+                            <button 
+                                class="mode-btn" 
+                                :class="{ active: textColorMode === 'dark' }"
+                                @click="textColorMode = 'dark'; editForm.textColor = '#1a1a1a'"
+                                title="使用深色文字（适合浅色背景）">
+                                🌙 深色文字
+                            </button>
+                            <button 
+                                class="mode-btn" 
+                                :class="{ active: textColorModeMode === 'custom' }"
+                                @click="textColorMode = 'custom'"
+                                title="完全自定义文字颜色">
+                                🎨 自定义
+                            </button>
+                        </div>
+
+                        <!-- 自定义颜色选择器 -->
+                        <div v-if="textColorMode === 'custom'" class="custom-color-picker" style="margin-top:12px">
+                            <label>选择文字颜色：</label>
+                            <div class="color-input-row">
+                                <input type="color" v-model="editForm.textColor" class="color-picker-input">
+                                <input type="text" v-model="editForm.textColor" placeholder="#ffffff" class="text-input" style="flex:1">
+                            </div>
+                        </div>
+
+                        <!-- 预设文字颜色快捷选项 -->
+                        <div class="text-color-presets" style="margin-top:12px">
+                            <span class="preset-label">快捷选择：</span>
+                            <div class="color-chip" 
+                                 v-for="color in textColorPresets" 
+                                 :key="color.value"
+                                 :style="{ backgroundColor: color.bg, color: color.text }"
+                                 :class="{ active: editForm.textColor === color.value }"
+                                 @click="editForm.textColor = color.value; textColorMode = 'custom'"
+                                 :title="color.name">
+                                Aa
+                            </div>
+                        </div>
+
+                        <!-- 实时预览效果 -->
+                        <div class="live-preview-box" :style="getLivePreviewStyle()" style="margin-top:16px">
+                            <div class="preview-sample-text">
+                                <h3 style="margin:0;font-size:20px;font-weight:800">{{ seller.username || '用户名' }}</h3>
+                                <p style="margin:8px 0 0;opacity:0.9;font-size:14px">📍 示例位置信息</p>
+                                <p style="margin:4px 0 0;opacity:0.85;font-size:13px">📅 注册时间: 2026-08-20</p>
+                                <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+                                    <span style="padding:4px 12px;border-radius:12px;font-size:12px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px)">标签示例1</span>
+                                    <span style="padding:4px 12px;border-radius:12px;font-size:12px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px)">标签示例2</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-hint" style="margin-top:8px;color:var(--warning)">
+                            💡 <strong>提示：</strong>深色背景建议用浅色文字，浅色背景建议用深色文字。<br>
+                            选择"自动适配"模式可根据背景智能调整，避免看不清的问题！
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 个人标签 -->
@@ -308,10 +386,15 @@ const SellerProfile = {
             editForm: {
                 avatar: '',
                 background: '',
-                tags: ''
+                tags: '',
+                textColor: '',  // 新增：自定义文字颜色
+                textColorMode: 'auto'  // 新增：auto/light/dark/custom
             },
             backgroundImageUrl: '',
             newTag: '',
+            
+            // 文字颜色模式
+            textColorMode: 'auto',  // auto/light/dark/custom
             
             // 直接购买相关数据
             showBuyModal: false,
@@ -342,7 +425,18 @@ const SellerProfile = {
             ],
             
             // 推荐标签
-            recommendedTags: ['诚信卖家', '快速发货', '书籍保存完好', '学生党', '价格实惠', '正版保证', '包装仔细', '热情服务']
+            recommendedTags: ['诚信卖家', '快速发货', '书籍保存完好', '学生党', '价格实惠', '正版保证', '包装仔细', '热情服务'],
+            
+            // 文字颜色预设
+            textColorPresets: [
+                { name: '纯白', value: '#ffffff', bg: '#1a1a1a', text: '#ffffff' },
+                { name: '乳白', value: '#f5f5f5', bg: '#2d2d2d', text: '#f5f5f5' },
+                { name: '浅灰', value: '#e0e0e0', bg: '#3d3d3d', text: '#e0e0e0' },
+                { name: '纯黑', value: '#1a1a1a', bg: '#f0f0f0', text: '#1a1a1a' },
+                { name: '深灰', value: '#333333', bg: '#e8e8e8', text: '#333333' },
+                { name: '墨绿', value: '#2d5016', bg: '#c8e6c9', text: '#2d5016' },
+                { name: '深蓝', value: '#1a237e', bg: '#c5cae9', text: '#1a237e' }
+            ]
         };
     },
     
@@ -388,15 +482,20 @@ const SellerProfile = {
             this.loading = true;
             try {
                 const sellerData = await api.get('/user/seller/' + this.sellerId);
-                console.log('=== 从服务器获取的卖家数据 ===', sellerData);
-                console.log('=== background 字段值 ===', sellerData.seller?.background);
+                console.log('=== [DEBUG] 从服务器获取的完整数据 ===', JSON.stringify(sellerData, null, 2));
+                console.log('=== [DEBUG] seller 对象 ===', sellerData.seller);
+                console.log('=== [DEBUG] textColor 字段 ===', sellerData.seller?.textColor);
+                console.log('=== [DEBUG] textColorMode 字段 ===', sellerData.seller?.textColorMode);
+                console.log('=== [DEBUG] background 字段 ===', sellerData.seller?.background);
 
                 // 直接赋值（Vue 2 会自动检测 data 属性的变化）
                 this.seller = sellerData.seller || null;
                 this.soldCount = sellerData.soldCount || 0;
 
-                console.log('=== 赋值后的 this.seller ===', this.seller);
-                console.log('=== 赋值后的 this.seller.background ===', this.seller?.background);
+                console.log('=== [DEBUG] 赋值后的 this.seller ===', this.seller);
+                console.log('=== [DEBUG] 赋值后的 this.seller.textColor ===', this.seller?.textColor);
+                console.log('=== [DEBUG] 赋值后的 this.seller.textColorMode ===', this.seller?.textColorMode);
+                console.log('=== [DEBUG] 赋值后的 this.seller.background ===', this.seller?.background);
 
                 const books = await api.get('/secondbook/my/' + this.sellerId);
                 this.onSaleBooks = (books || []).filter(b => String(b.status) === '1');
@@ -669,7 +768,9 @@ const SellerProfile = {
             this.editForm = {
                 avatar: this.seller.avatar || '',
                 background: this.seller.background || '',
-                tags: this.seller.tags || ''
+                tags: this.seller.tags || '',
+                textColor: this.seller.textColor || '',
+                textColorMode: this.seller.textColorMode || 'auto'
             };
             
             // 检查背景是否为URL（以http开头）
@@ -679,6 +780,12 @@ const SellerProfile = {
                 this.editForm.background = '';  // 清空渐变色
             } else {
                 this.backgroundImageUrl = '';
+            }
+            
+            // 初始化文字颜色模式
+            this.textColorMode = this.seller.textColorMode || 'auto';
+            if (!this.editForm.textColor) {
+                this.editForm.textColor = this.calculateTextColor(bg);
             }
             
             this.newTag = '';
@@ -803,44 +910,178 @@ const SellerProfile = {
             console.log('🎨 [getSellerCardBackgroundStyle] 当前背景值:', bg.substring(0, 50) + '...');
             console.log('🎨 [getSellerCardBackgroundStyle] 背景长度:', bg.length);
 
+            let baseStyle = {};
+
             // 检查是否为网络 URL (http/https)
             if (bg && (bg.startsWith('http://') || bg.startsWith('https://'))) {
                 console.log('✅ 使用网络图片背景');
-                return {
+                baseStyle = {
                     backgroundImage: `url(${bg})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat'
                 };
             }
-
             // 检查是否为 Base64 Data URI (data:image/...)
-            if (bg && bg.startsWith('data:image/')) {
+            else if (bg && bg.startsWith('data:image/')) {
                 console.log('✅ 使用 Base64 图片背景');
-                return {
+                baseStyle = {
                     backgroundImage: `url(${bg})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat'
                 };
             }
-
             // 检查是否为本地路径 (/uploads/...)
-            if (bg && bg.startsWith('/uploads/')) {
+            else if (bg && bg.startsWith('/uploads/')) {
                 console.log('✅ 使用本地图片背景');
-                return {
+                baseStyle = {
                     backgroundImage: `url(${bg})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat'
                 };
             }
-
             // 使用渐变色或默认值
-            const finalBg = bg || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            console.log('✅ 使用渐变背景:', finalBg);
+            else {
+                const finalBg = bg || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                console.log('✅ 使用渐变背景:', finalBg);
+                baseStyle = { background: finalBg };
+            }
+
+            // ===== 新增：计算并应用文字颜色 =====
+            let textColor = '#ffffff';  // 默认白色
+
+            const mode = this.seller?.textColorMode || 'auto';
+            console.log('=== [DEBUG-文字颜色] textColorMode 原始值:', this.seller?.textColorMode);
+            console.log('=== [DEBUG-文字颜色] textColor 原始值:', this.seller?.textColor);
+            console.log('=== [DEBUG-文字颜色] 使用模式:', mode);
+
+            if (mode === 'auto') {
+                // 自动模式：根据背景亮度计算最佳文字颜色
+                textColor = this.calculateTextColor(bg);
+                console.log('=== [DEBUG-文字颜色] 自动计算结果:', textColor);
+            } else if (this.seller?.textColor) {
+                // 使用用户设置的自定义颜色
+                textColor = this.seller.textColor;
+                console.log('=== [DEBUG-文字颜色] 使用自定义颜色:', textColor);
+            } else {
+                console.log('=== [DEBUG-文字颜色] 使用默认颜色:', textColor);
+            }
+
+            // 应用文字颜色到样式
+            baseStyle.color = textColor;
+
+            console.log('🎨 文字颜色模式:', mode, '| 最终颜色:', textColor);
+            console.log('=== [DEBUG-文字颜色] 完整样式对象:', JSON.stringify(baseStyle, null, 2));
+            
+            return baseStyle;
+        },
+
+        // ===== 新增：智能文字颜色计算 =====
+        calculateTextColor(backgroundColor) {
+            if (!backgroundColor) {
+                return '#ffffff';  // 默认返回白色（适合深色背景）
+            }
+
+            try {
+                // 提取主要颜色（处理渐变、URL等情况）
+                let mainColor = backgroundColor;
+
+                // 如果是渐变，提取第一个颜色
+                if (mainColor.includes('gradient')) {
+                    const colorMatch = mainColor.match(/#[0-9a-fA-F]{6}|rgba?\([^)]+\)/gi);
+                    if (colorMatch && colorMatch.length > 0) {
+                        mainColor = colorMatch[0];
+                    } else {
+                        return '#ffffff';  // 无法解析，默认白色
+                    }
+                }
+
+                // 如果是 URL 背景，默认使用白色（大多数图片背景较暗或有遮罩）
+                if (mainColor.includes('url(') || mainColor.startsWith('http')) {
+                    return '#ffffff';
+                }
+
+                // 解析颜色值
+                let r = 0, g = 0, b = 0;
+
+                if (mainColor.startsWith('#')) {
+                    // 十六进制颜色
+                    const hex = mainColor.slice(1);
+                    if (hex.length === 3) {
+                        r = parseInt(hex[0] + hex[0], 16);
+                        g = parseInt(hex[1] + hex[1], 16);
+                        b = parseInt(hex[2] + hex[2], 16);
+                    } else if (hex.length === 6) {
+                        r = parseInt(hex.slice(0, 2), 16);
+                        g = parseInt(hex.slice(2, 4), 16);
+                        b = parseInt(hex.slice(4, 6), 16);
+                    }
+                } else if (mainColor.startsWith('rgb')) {
+                    // RGB/RGBA 颜色
+                    const rgbMatch = mainColor.match(/(\d+),\s*(\d+),\s*(\d+)/);
+                    if (rgbMatch) {
+                        r = parseInt(rgbMatch[1]);
+                        g = parseInt(rgbMatch[2]);
+                        b = parseInt(rgbMatch[3]);
+                    }
+                }
+
+                // 计算亮度（使用相对亮度公式）
+                // 参考 WCAG 2.0 标准
+                const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+                console.log(`🎨 颜色分析: RGB(${r},${g},${b}), 亮度: ${luminance.toFixed(2)}`);
+
+                // 亮度 > 0.5 认为是浅色背景，用深色文字；否则用浅色文字
+                if (luminance > 0.5) {
+                    console.log('✅ 浅色背景 → 使用深色文字 (#1a1a1a)');
+                    return '#1a1a1a';  // 深色文字
+                } else {
+                    console.log('✅ 深色背景 → 使用浅色文字 (#ffffff)');
+                    return '#ffffff';  // 浅色文字
+                }
+            } catch (e) {
+                console.warn('⚠️ 颜色解析失败，使用默认白色:', e);
+                return '#ffffff';
+            }
+        },
+
+        // ===== 新增：实时预览样式 =====
+        getLivePreviewStyle() {
+            let bgColor = {};
+
+            // 获取当前选择的背景
+            if (this.backgroundImageUrl && this.backgroundImageUrl.trim()) {
+                bgColor = {
+                    backgroundImage: `url(${this.backgroundImageUrl})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                };
+            } else {
+                bgColor = { background: this.editForm.background || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' };
+            }
+
+            // 根据模式计算文字颜色
+            let textColor = '#ffffff';
+            if (this.textColorMode === 'auto') {
+                textColor = this.calculateTextColor(this.editForm.background || this.backgroundImageUrl);
+            } else if (this.textColorMode === 'light') {
+                textColor = '#ffffff';
+            } else if (this.textColorMode === 'dark') {
+                textColor = '#1a1a1a';
+            } else if (this.editForm.textColor) {
+                textColor = this.editForm.textColor;
+            }
+
             return {
-                background: finalBg
+                ...bgColor,
+                color: textColor,
+                padding: '20px',
+                borderRadius: '12px',
+                minHeight: '120px'
             };
         },
 
@@ -848,19 +1089,35 @@ const SellerProfile = {
             this.saving = true;
             try {
                 const finalBackground = this.backgroundImageUrl.trim() || this.editForm.background || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                
+                // 计算最终文字颜色
+                let finalTextColor = '';
+                let finalTextColorMode = this.textColorMode || 'auto';
+                
+                if (finalTextColorMode === 'auto') {
+                    finalTextColor = '';  // 自动模式不保存具体颜色，由前端计算
+                } else if (finalTextColorMode === 'light') {
+                    finalTextColor = '#ffffff';
+                } else if (finalTextColorMode === 'dark') {
+                    finalTextColor = '#1a1a1a';
+                } else {
+                    finalTextColor = this.editForm.textColor || '';
+                }
 
                 const updateData = {
                     id: parseInt(this.sellerId),
                     avatar: this.editForm.avatar,
                     background: finalBackground,
-                    tags: this.editTagsList.join(',')
+                    tags: this.editTagsList.join(','),
+                    textColor: finalTextColor,  // 新增
+                    textColorMode: finalTextColorMode  // 新增
                 };
 
                 console.log('📤 [步骤1] 准备发送到服务器的数据:');
                 console.log('  - ID:', updateData.id);
                 console.log('  - Background:', updateData.background);
-                console.log('  - Background 长度:', updateData.background.length, '字符');
-                console.log('  - Background 类型:', typeof updateData.background);
+                console.log('  - Text Color Mode:', updateData.textColorMode);
+                console.log('  - Text Color:', updateData.textColor);
 
                 const result = await api.put('/user/updateProfile', updateData);
 

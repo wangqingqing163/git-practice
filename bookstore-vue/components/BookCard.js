@@ -24,8 +24,8 @@ const BookCard = {
             </div>
         </div>
         <div class="book-actions" v-if="isOnSale">
-            <button class="btn-outline" @click.stop="$emit('add-cart', book.id)">🛒 加入购物车</button>
-            <button class="btn-primary" @click.stop="$emit('buy-now', book)">⚡ 立即购买</button>
+            <button class="btn-outline btn-compact" @click.stop="$emit('add-cart', book.id)">+ 加购</button>
+            <button class="btn-primary btn-compact" @click.stop="$emit('buy-now', book)">⚡ 下单</button>
         </div>
         <div class="book-actions" v-else>
             <button class="btn-disabled" disabled @click.stop="showSoldOutTip">该书已售出</button>
