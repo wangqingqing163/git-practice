@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.bookstore.mapper.CommentMapper">
+
+    <select id="findByOrderId" resultType="Comment">
+        SELECT c.*, u.username FROM comment c LEFT JOIN user u ON c.user_id = u.id WHERE c.order_id = #{orderId}
+    </select>
+
+    <select id="findByBookId" resultType="Comment">
+        SELECT c.*, u.username FROM comment c LEFT JOIN user u ON c.user_id = u.id WHERE c.book_id = #{bookId} ORDER BY c.create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO comment(order_id, user_id, book_id, score, content, status, create_time)
+        VALUES(#{orderId}, #{userId}, #{bookId}, #{score}, #{content}, #{status}, #{createTime})
+    </insert>
+
+    <update id="update">
+        UPDATE comment
+        SET content = #{content},
+            status = #{status},
+            reply = #{reply},
+            reply_time = #{replyTime}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteByOrderIds">
+        DELETE FROM comment WHERE order_id IN
+        <foreach collection="orderIds" item="oid" open="(" separator="," close=")">
+            #{oid}
+        </foreach>
+    </delete>
+
+    <select id="findAll" resultType="Comment">
+        SELECT c.*, u.username, b.name AS bookName FROM comment c
+        LEFT JOIN user u ON c.user_id = u.id
+        LEFT JOIN second_book b ON c.book_id = b.id
+        ORDER BY c.create_time DESC
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM comment WHERE id = #{id}
+    </delete>
+
+</mapper>

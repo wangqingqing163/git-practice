@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.bookstore.mapper.SecondBookMapper">
+
+    <!-- 管理员全量查询：JOIN category 取分类名 -->
+    <select id="findAll" resultType="SecondBook">
+        SELECT b.*, c.name categoryName, u.username sellerName
+        FROM second_book b
+        LEFT JOIN category c ON b.category_id = c.id
+        LEFT JOIN user u ON b.seller_id = u.id
+    </select>
+
+    <select id="findByStatus" resultType="SecondBook">
+        SELECT b.*,c.name categoryName, u.username sellerName
+        FROM second_book b
+        LEFT JOIN category c ON b.category_id = c.id
+        LEFT JOIN user u ON b.seller_id = u.id
+        WHERE b.status = 1
+    </select>
+
+    <select id="findByStatusPage" resultType="SecondBook">
+        SELECT b.*,c.name categoryName, u.username sellerName
+        FROM second_book b
+        LEFT JOIN category c ON b.category_id = c.id
+        LEFT JOIN user u ON b.seller_id = u.id
+        WHERE b.status = 1
+        <if test="categoryId != null">
+            AND b.category_id = #{categoryId}
+        </if>
+        ORDER BY b.id DESC
+        LIMIT #{offset}, #{size}
+    </select>
+
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*) FROM second_book WHERE status = 1
+        <if test="categoryId != null">
+            AND category_id = #{categoryId}
+        </if>
+    </select>
+
+    <select id="findBySellerId" resultType="SecondBook">
+        SELECT * FROM second_book WHERE seller_id = #{sellerId}
+    </select>
+
+    <select id="findById" resultType="SecondBook">
+        SELECT * FROM second_book WHERE id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO second_book(name, author, price, level, book_desc, image, seller_id, status, category_id)
+        VALUES(#{name}, #{author}, #{price}, #{level}, #{bookDesc}, #{image}, #{sellerId}, #{status}, #{categoryId})
+    </insert>
+
+    <update id="update">
+        UPDATE second_book
+        SET name = #{name}, author = #{author}, price = #{price}, level = #{level},
+            book_desc = #{bookDesc}, image = #{image}, seller_id = #{sellerId},
+            category_id = #{categoryId}
+            <if test="status != null">
+                , status = #{status}
+            </if>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM second_book WHERE id = #{id}
+    </delete>
+
+    <select id="findByName" resultType="SecondBook">
+        SELECT b.*,c.name categoryName, u.username sellerName
+        FROM second_book b
+        LEFT JOIN category c ON b.category_id = c.id
+        LEFT JOIN user u ON b.seller_id = u.id
+        WHERE b.status = 1 AND b.name LIKE CONCAT('%', #{name}, '%')
+    </select>
+
+    <select id="findByNameOrAuthor" resultType="SecondBook">
+        SELECT b.*,c.name categoryName, u.username sellerName
+        FROM second_book b
+        LEFT JOIN category c ON b.category_id = c.id
+        LEFT JOIN user u ON b.seller_id = u.id
+        WHERE b.status = 1
+          AND (b.name LIKE CONCAT('%', #{keyword}, '%') OR b.author LIKE CONCAT('%', #{keyword}, '%'))
+    </select>
+
+    <!-- 管理员统计图书总数 -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM second_book
+    </select>
+
+    <!-- 热门/最新上架图书（按ID降序，ID越大表示越新） -->
+    <select id="findHotBooks" resultType="SecondBook">
+        SELECT b.*, c.name categoryName, u.username sellerName
+        FROM second_book b
+        LEFT JOIN category c ON b.category_id = c.id
+        LEFT JOIN user u ON b.seller_id = u.id
+        WHERE b.status = 1
+        ORDER BY b.id DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 卖家排行榜（按销量排序） -->
+    <select id="findSellerRanking" resultType="java.util.Map">
+        SELECT
+            o.seller_id AS sellerId,
+            u.username,
+            COUNT(DISTINCT o.id) AS soldCount,
+            COUNT(DISTINCT CASE WHEN o.status IN ('received', 'shipped') THEN o.id END) AS completedCount,
+            COALESCE(AVG(c.score), 0) AS avgScore
+        FROM orders o
+        LEFT JOIN user u ON o.seller_id = u.id
+        LEFT JOIN comment c ON c.order_id = o.id
+        WHERE o.seller_id IS NOT NULL
+        GROUP BY o.seller_id, u.username
+        ORDER BY soldCount DESC
+        LIMIT #{limit}
+    </select>
+
+    <update id="clearAllCategoryIds">
+        UPDATE second_book SET category_id = NULL
+    </update>
+
+</mapper>

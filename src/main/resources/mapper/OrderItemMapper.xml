@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.bookstore.mapper.OrderItemMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO order_item(order_id, book_id, quantity, price)
+        VALUES(#{orderId}, #{bookId}, #{quantity}, #{price})
+    </insert>
+
+    <delete id="deleteByBookId">
+        DELETE FROM order_item WHERE book_id = #{bookId}
+    </delete>
+
+</mapper>

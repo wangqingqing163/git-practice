@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.bookstore.mapper.UserMapper">
+
+    <select id="findById" resultType="User">
+        SELECT * FROM `user` WHERE id = #{id}
+    </select>
+
+    <select id="findByUsername" resultType="User">
+        SELECT * FROM `user` WHERE username = #{username}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `user`(username, password, phone, email, address, role, avatar, background, ip, tags)
+        VALUES(#{username}, #{password}, #{phone}, #{email}, #{address}, 0, #{avatar}, #{background}, #{ip}, #{tags})
+    </insert>
+
+    <update id="update">
+        UPDATE `user`
+        SET username = #{username},
+            password = #{password},
+            phone = #{phone},
+            email = #{email},
+            address = #{address},
+            role = #{role},
+            avatar = #{avatar},
+            background = #{background},
+            text_color = #{textColor},
+            text_color_mode = #{textColorMode},
+            ip = #{ip},
+            tags = #{tags}
+        WHERE id = #{id}
+    </update>
+
+    <select id="countUsers" resultType="int">
+        SELECT COUNT(*) FROM `user`
+    </select>
+
+    <select id="findAll" resultType="User">
+        SELECT * FROM `user` ORDER BY id ASC
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM `user` WHERE id = #{id}
+    </delete>
+
+</mapper>

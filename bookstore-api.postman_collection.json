@@ -1,0 +1,1129 @@
+{
+  "info": {
+    "name": "Bookstore API",
+    "_postman_id": "bookstore-api-collection",
+    "description": "二手书店系统API接口测试集合",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8085",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "用户模块",
+      "item": [
+        {
+          "name": "用户注册",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"123456\",\n  \"name\": \"测试用户\",\n  \"phone\": \"13800138000\",\n  \"address\": \"北京市朝阳区\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "register"]
+            },
+            "description": "用户注册接口"
+          }
+        },
+        {
+          "name": "用户登录",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "login"]
+            },
+            "description": "用户登录，返回token和用户信息"
+          }
+        },
+        {
+          "name": "根据ID查询用户",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "1"]
+            },
+            "description": "根据用户ID查询用户信息"
+          }
+        },
+        {
+          "name": "更新用户信息",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"name\": \"更新后用户名\",\n  \"phone\": \"13900139000\",\n  \"address\": \"上海市浦东新区\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user"]
+            },
+            "description": "更新用户基本信息"
+          }
+        },
+        {
+          "name": "更新用户资料",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"name\": \"新昵称\",\n  \"tags\": \"学霸,好书者\",\n  \"background\": \"linear-gradient(135deg,#667eea,#764ba2)\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/updateProfile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "updateProfile"]
+            },
+            "description": "更新用户扩展资料(昵称、标签、背景等)"
+          }
+        },
+        {
+          "name": "上传用户头像",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/uploadAvatar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "uploadAvatar"]
+            },
+            "description": "上传用户头像图片"
+          }
+        },
+        {
+          "name": "统计用户数量",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/count",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "count"]
+            },
+            "description": "获取系统用户数量"
+          }
+        },
+        {
+          "name": "获取卖家详情",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/seller/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "seller", "1"]
+            },
+            "description": "根据卖家ID获取卖家主页详情"
+          }
+        }
+      ]
+    },
+    {
+      "name": "分类模块",
+      "item": [
+        {
+          "name": "获取分类列表",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/category/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["category", "list"]
+            },
+            "description": "获取所有分类"
+          }
+        },
+        {
+          "name": "根据ID查询分类",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/category/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["category", "1"]
+            },
+            "description": "根据ID查询分类详情"
+          }
+        },
+        {
+          "name": "新增分类",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"计算机\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/category/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["category", "add"]
+            },
+            "description": "新增分类"
+          }
+        },
+        {
+          "name": "更新分类",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"name\": \"计算机类\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/category/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["category", "update"]
+            },
+            "description": "更新分类名称"
+          }
+        },
+        {
+          "name": "删除分类",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/category/delete/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["category", "delete", "1"]
+            },
+            "description": "删除分类"
+          }
+        }
+      ]
+    },
+    {
+      "name": "二手书模块",
+      "item": [
+        {
+          "name": "获取所有图书",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/secondbook/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "secondbook", "list"]
+            },
+            "description": "获取所有二手书列表"
+          }
+        },
+        {
+          "name": "获取在售图书",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/secondbook/onSale",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "secondbook", "onSale"]
+            },
+            "description": "获取所有状态为在售(status=1)的图书"
+          }
+        },
+        {
+          "name": "分页查询图书",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/secondbook/page?page=1&size=12&categoryId=",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "secondbook", "page"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "size",
+                  "value": "12"
+                },
+                {
+                  "key": "categoryId",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "分页获取在售图书列表，可按分类筛选"
+          }
+        },
+        {
+          "name": "搜索图书",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/secondbook/search?name=三体",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "secondbook", "search"],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "三体"
+                }
+              ]
+            },
+            "description": "按书名或作者搜索图书"
+          }
+        },
+        {
+          "name": "获取热门图书",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/secondbook/hot?limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "secondbook", "hot"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "获取热门图书(按销量排序)"
+          }
+        },
+        {
+          "name": "卖家销量排行",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/secondbook/seller-ranking?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "secondbook", "seller-ranking"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "获取卖家销量排行榜"
+          }
+        },
+        {
+          "name": "查询卖家的图书",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/secondbook/my/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "secondbook", "my", "1"]
+            },
+            "description": "根据卖家ID查询其发布的所有图书"
+          }
+        },
+        {
+          "name": "根据ID查询图书",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/secondbook/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "secondbook", "1"]
+            },
+            "description": "根据图书ID查询详情"
+          }
+        },
+        {
+          "name": "上传图书封面",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/secondbook/upload",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "secondbook", "upload"]
+            },
+            "description": "上传图书封面图片"
+          }
+        },
+        {
+          "name": "发布图书",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"三体\",\n  \"author\": \"刘慈欣\",\n  \"price\": 25.00,\n  \"level\": \"九成新\",\n  \"bookDesc\": \"刘慈欣代表作，科幻小说\",\n  \"image\": \"/uploads/test.jpg\",\n  \"sellerId\": 1,\n  \"categoryId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/secondbook",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "secondbook"]
+            },
+            "description": "卖家发布二手书"
+          }
+        },
+        {
+          "name": "更新图书信息",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"name\": \"三体（修订版）\",\n  \"price\": 22.00,\n  \"level\": \"全新\",\n  \"bookDesc\": \"修订版，无笔记\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/secondbook",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "secondbook"]
+            },
+            "description": "更新图书信息"
+          }
+        },
+        {
+          "name": "下架图书",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/secondbook/del/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "secondbook", "del", "1"]
+            },
+            "description": "根据ID下架（删除）图书"
+          }
+        }
+      ]
+    },
+    {
+      "name": "购物车模块",
+      "item": [
+        {
+          "name": "获取用户购物车",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "1"]
+            },
+            "description": "根据用户ID获取购物车列表"
+          }
+        },
+        {
+          "name": "添加到购物车",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"secondBookId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "add"]
+            },
+            "description": "将二手书添加到购物车"
+          }
+        },
+        {
+          "name": "修改购物车数量",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"num\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/updateNum",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "updateNum"]
+            },
+            "description": "修改购物车商品数量"
+          }
+        },
+        {
+          "name": "删除购物车商品",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "1"]
+            },
+            "description": "根据ID删除购物车商品"
+          }
+        }
+      ]
+    },
+    {
+      "name": "订单模块",
+      "item": [
+        {
+          "name": "根据ID查询订单",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "1"]
+            },
+            "description": "根据订单ID查询订单详情"
+          }
+        },
+        {
+          "name": "创建订单",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"buyerId\": 1,\n  \"bookId\": 1,\n  \"address\": \"北京市海淀区中关村大街1号\",\n  \"phone\": \"13800138000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "create"]
+            },
+            "description": "买家创建订单"
+          }
+        },
+        {
+          "name": "卖家发货",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trackingNo\": \"SF1234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/ship/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "ship", "1"]
+            },
+            "description": "卖家发货，填写快递单号"
+          }
+        },
+        {
+          "name": "催促发货",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/urge/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "urge", "1"]
+            },
+            "description": "买家催促卖家发货"
+          }
+        },
+        {
+          "name": "查询被催促的订单",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/urged/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "urged", "1"]
+            },
+            "description": "卖家查询被催促的订单列表"
+          }
+        },
+        {
+          "name": "确认发货信息",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/confirm-ship-info/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "confirm-ship-info", "1"]
+            },
+            "description": "卖家确认催促信息已看到"
+          }
+        },
+        {
+          "name": "查询已确认的订单",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/confirmed/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "confirmed", "1"]
+            },
+            "description": "卖家查询已确认的催促订单"
+          }
+        },
+        {
+          "name": "确认收货",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/receive/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "receive", "1"]
+            },
+            "description": "买家确认收货"
+          }
+        },
+        {
+          "name": "取消订单",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/cancel/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "cancel", "1"]
+            },
+            "description": "取消订单"
+          }
+        },
+        {
+          "name": "查询买家订单",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/buyer/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "buyer", "1"]
+            },
+            "description": "根据买家ID查询其所有订单"
+          }
+        },
+        {
+          "name": "查询卖家订单",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/seller/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "seller", "1"]
+            },
+            "description": "根据卖家ID查询其所有订单"
+          }
+        },
+        {
+          "name": "查询我的全部订单",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/my/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders", "my", "1"]
+            },
+            "description": "查询用户作为买家和卖家的所有订单"
+          }
+        }
+      ]
+    },
+    {
+      "name": "评论模块",
+      "item": [
+        {
+          "name": "根据订单ID查询评论",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/comment/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "comment", "1"]
+            },
+            "description": "根据订单ID查询评论列表"
+          }
+        },
+        {
+          "name": "新增评论",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": 1,\n  \"userId\": 1,\n  \"bookId\": 1,\n  \"score\": 5,\n  \"content\": \"书很新，物流很快，非常满意！\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/comment",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "comment"]
+            },
+            "description": "买家对已收货的订单发表评论"
+          }
+        }
+      ]
+    },
+    {
+      "name": "收藏模块",
+      "item": [
+        {
+          "name": "获取用户收藏列表",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/favorite/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "favorite", "1"]
+            },
+            "description": "根据用户ID获取收藏列表"
+          }
+        },
+        {
+          "name": "检查是否已收藏",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/favorite/check?userId=1&bookId=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "favorite", "check"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "1"
+                },
+                {
+                  "key": "bookId",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "检查用户是否已收藏某本书"
+          }
+        },
+        {
+          "name": "添加收藏",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"bookId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/favorite/add",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "favorite", "add"]
+            },
+            "description": "将图书加入收藏"
+          }
+        },
+        {
+          "name": "取消收藏",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"bookId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/favorite/remove",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "favorite", "remove"]
+            },
+            "description": "取消收藏"
+          }
+        }
+      ]
+    },
+    {
+      "name": "管理员模块",
+      "item": [
+        {
+          "name": "获取系统统计",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "stats"]
+            },
+            "description": "获取系统整体统计数据（用户数、订单数、图书数等）"
+          }
+        },
+        {
+          "name": "用户管理-列表",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users"]
+            },
+            "description": "管理员获取所有用户列表"
+          }
+        },
+        {
+          "name": "用户管理-详情",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/user/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "user", "1"]
+            },
+            "description": "管理员查看用户详情"
+          }
+        },
+        {
+          "name": "用户管理-新增",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"adminuser\",\n  \"password\": \"123456\",\n  \"name\": \"管理员用户\",\n  \"phone\": \"13800000000\",\n  \"role\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/user",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "user"]
+            },
+            "description": "管理员新增用户"
+          }
+        },
+        {
+          "name": "用户管理-修改",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"修改后昵称\",\n  \"phone\": \"13900000000\",\n  \"role\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/user/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "user", "1"]
+            },
+            "description": "管理员修改用户信息"
+          }
+        },
+        {
+          "name": "用户管理-删除",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/user/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "user", "1"]
+            },
+            "description": "管理员删除用户"
+          }
+        },
+        {
+          "name": "图书管理-列表",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "books"]
+            },
+            "description": "管理员获取所有图书列表"
+          }
+        },
+        {
+          "name": "图书管理-详情",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/book/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "book", "1"]
+            },
+            "description": "管理员查看图书详情"
+          }
+        },
+        {
+          "name": "图书管理-新增",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"管理图书\",\n  \"author\": \"作者\",\n  \"price\": 30.00,\n  \"level\": \"全新\",\n  \"bookDesc\": \"管理员添加的图书\",\n  \"sellerId\": 1,\n  \"categoryId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/book",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "book"]
+            },
+            "description": "管理员新增图书"
+          }
+        },
+        {
+          "name": "图书管理-修改",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"管理图书-已修改\",\n  \"price\": 35.00\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/book/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "book", "1"]
+            },
+            "description": "管理员修改图书信息"
+          }
+        },
+        {
+          "name": "图书管理-删除",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/book/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "book", "1"]
+            },
+            "description": "管理员删除图书"
+          }
+        },
+        {
+          "name": "订单管理-列表",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "orders"]
+            },
+            "description": "管理员获取所有订单列表"
+          }
+        },
+        {
+          "name": "订单管理-详情",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/order/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "order", "1"]
+            },
+            "description": "管理员查看订单详情"
+          }
+        },
+        {
+          "name": "订单管理-修改状态",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/order/1/status?status=shipped",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "order", "1", "status"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "shipped"
+                }
+              ]
+            },
+            "description": "管理员修改订单状态(pending/shipped/received/cancelled)"
+          }
+        },
+        {
+          "name": "订单管理-删除",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/order/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "order", "1"]
+            },
+            "description": "管理员删除订单"
+          }
+        },
+        {
+          "name": "评论管理-列表",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "comments"]
+            },
+            "description": "管理员获取所有评论列表"
+          }
+        },
+        {
+          "name": "评论管理-删除",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/comment/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "comment", "1"]
+            },
+            "description": "管理员删除评论"
+          }
+        }
+      ]
+    }
+  ]
+}

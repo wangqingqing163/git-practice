@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.bookstore.mapper.CartMapper">
+
+    <select id="findByUserId" resultType="Cart">
+        SELECT c.id, c.user_id, c.book_id, c.quantity, c.selected FROM cart c
+        JOIN second_book sb ON c.book_id = sb.id
+        WHERE c.user_id = #{userId} AND sb.seller_id != #{userId} AND sb.status = '1'
+    </select>
+
+    <select id="findByBuyerIdAndBookId" resultType="Cart">
+        SELECT id, user_id, book_id, quantity, selected FROM cart WHERE user_id = #{buyerId} AND book_id = #{bookId}
+    </select>
+
+    <!-- 新增：根据用户ID+图书ID查询（和上面功能一样，直接复用） -->
+    <select id="selectByUidAndBid" resultType="Cart">
+        SELECT id, user_id, book_id, quantity, selected FROM cart WHERE user_id = #{userId} AND book_id = #{bookId}
+    </select>
+
+    <!-- 新增：修改购物车数量 -->
+    <update id="update">
+        UPDATE cart SET quantity=#{quantity} WHERE id=#{id}
+    </update>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO cart(user_id, book_id, quantity, selected)
+        VALUES(#{userId}, #{bookId}, #{quantity}, #{selected})
+    </insert>
+
+    <delete id="deleteById">
+        DELETE FROM cart WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByBuyerIdAndBookId">
+        DELETE FROM cart WHERE user_id = #{buyerId} AND book_id = #{bookId}
+    </delete>
+
+    <select id="findById" resultType="Cart">
+        SELECT id, user_id, book_id, quantity FROM cart WHERE id = #{id}
+    </select>
+
+    <delete id="deleteByBookId">
+        DELETE FROM cart WHERE book_id = #{bookId}
+    </delete>
+</mapper>

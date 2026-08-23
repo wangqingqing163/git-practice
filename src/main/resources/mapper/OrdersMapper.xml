@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.bookstore.mapper.OrdersMapper">
+
+    <!-- 完整版SQL：支持所有电商功能（需执行 upgrade-to-full.sql 或 schema-final.sql） -->
+
+    <select id="findByBuyerId" resultType="Orders">
+        SELECT o.*, sb.name as bookName, sb.author, sb.image,
+               oi.price as totalPrice, oi.quantity
+        FROM `orders` o
+        LEFT JOIN order_item oi ON o.id = oi.order_id
+        LEFT JOIN second_book sb ON (o.book_id IS NOT NULL AND o.book_id = sb.id) OR (oi.book_id IS NOT NULL AND oi.book_id = sb.id)
+        WHERE o.buyer_id = #{buyerId}
+        ORDER BY o.create_time DESC
+    </select>
+
+    <select id="findBySellerId" resultType="Orders">
+        SELECT o.*, sb.name as bookName, sb.author, sb.image,
+               oi.price as totalPrice, oi.quantity
+        FROM `orders` o
+        LEFT JOIN order_item oi ON o.id = oi.order_id
+        LEFT JOIN second_book sb ON (o.book_id IS NOT NULL AND o.book_id = sb.id) OR (oi.book_id IS NOT NULL AND oi.book_id = sb.id)
+        WHERE o.seller_id = #{sellerId}
+        ORDER BY o.create_time DESC
+    </select>
+
+    <select id="findById" resultType="Orders">
+        SELECT o.*, sb.name as bookName, sb.author, sb.image,
+               oi.price as totalPrice, oi.quantity
+        FROM `orders` o
+        LEFT JOIN order_item oi ON o.id = oi.order_id
+        LEFT JOIN second_book sb ON (o.book_id IS NOT NULL AND o.book_id = sb.id) OR (oi.book_id IS NOT NULL AND oi.book_id = sb.id)
+        WHERE o.id = #{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `orders`(
+            order_no, buyer_id, seller_id, book_id,
+            total_price, status, address, phone, receiver_name,
+            tracking_no, urged, buyer_confirmed, remark
+        ) VALUES(
+            #{orderNo}, #{buyerId}, #{sellerId}, #{bookId},
+            #{totalPrice}, #{status}, #{address}, #{phone}, #{receiverName},
+            #{trackingNo}, #{urged}, #{buyerConfirmed}, #{remark}
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE `orders` SET 
+            status = #{status}, 
+            tracking_no = #{trackingNo}, 
+            urged = #{urged}, 
+            buyer_confirmed = #{buyerConfirmed} 
+        WHERE id = #{id}
+    </update>
+
+    <select id="findAll" resultType="Orders">
+        SELECT o.*, sb.name as bookName, sb.author, sb.image,
+               oi.price as totalPrice, oi.quantity
+        FROM `orders` o
+        LEFT JOIN order_item oi ON o.id = oi.order_id
+        LEFT JOIN second_book sb ON (o.book_id IS NOT NULL AND o.book_id = sb.id) OR (oi.book_id IS NOT NULL AND oi.book_id = sb.id)
+        ORDER BY o.create_time DESC
+    </select>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM `orders`
+    </select>
+
+    <select id="findByBookId" resultType="Orders">
+        SELECT o.*, oi.price as totalPrice
+        FROM `orders` o
+        LEFT JOIN order_item oi ON o.id = oi.order_id
+        WHERE o.book_id = #{bookId} OR oi.book_id = #{bookId}
+    </select>
+
+    <delete id="deleteByBookId">
+        DELETE FROM `orders` WHERE book_id = #{bookId} OR id IN (
+            SELECT order_id FROM order_item WHERE book_id = #{bookId}
+        )
+    </delete>
+
+    <delete id="deleteById">
+        DELETE FROM `orders` WHERE id = #{id}
+    </delete>
+
+    <!-- 催单订单（卖家视角） -->
+    <select id="findUrgedBySellerId" resultType="Orders">
+        SELECT o.*, sb.name as bookName, sb.author, sb.image,
+               oi.price as totalPrice, oi.quantity
+        FROM `orders` o
+        LEFT JOIN order_item oi ON o.id = oi.order_id
+        LEFT JOIN second_book sb ON o.book_id = sb.id
+        WHERE o.seller_id = #{sellerId} 
+          AND o.urged = 1 
+          AND o.status IN ('pending', 'paid')
+        ORDER BY o.create_time DESC
+    </select>
+
+    <!-- 已确认收货的订单（卖家视角） -->
+    <select id="findConfirmedBySellerId" resultType="Orders">
+        SELECT o.*, sb.name as bookName, sb.author, sb.image,
+               oi.price as totalPrice, oi.quantity
+        FROM `orders` o
+        LEFT JOIN order_item oi ON o.id = oi.order_id
+        LEFT JOIN second_book sb ON o.book_id = sb.id
+        WHERE o.seller_id = #{sellerId} 
+          AND o.buyer_confirmed = 1 
+          AND o.status = 'shipped'
+        ORDER BY o.create_time DESC
+    </select>
+
+</mapper>

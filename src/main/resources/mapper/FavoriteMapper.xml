@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.bookstore.mapper.FavoriteMapper">
+
+    <select id="findByUserId" resultType="Favorite">
+        SELECT f.*, sb.name as bookName, sb.author, sb.price, sb.level, sb.image,
+               sb.status, sb.category_id as categoryId, c.name as categoryName
+        FROM favorite f
+        LEFT JOIN second_book sb ON f.book_id = sb.id
+        LEFT JOIN category c ON sb.category_id = c.id
+        WHERE f.user_id = #{userId}
+        ORDER BY f.create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO favorite(user_id, book_id) VALUES(#{userId}, #{bookId})
+    </insert>
+
+    <select id="findByUserIdAndBookId" resultType="Favorite">
+        SELECT * FROM favorite WHERE user_id = #{userId} AND book_id = #{bookId}
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM favorite WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByUserIdAndBookId">
+        DELETE FROM favorite WHERE user_id = #{userId} AND book_id = #{bookId}
+    </delete>
+
+    <delete id="deleteByBookId">
+        DELETE FROM favorite WHERE book_id = #{bookId}
+    </delete>
+</mapper>
